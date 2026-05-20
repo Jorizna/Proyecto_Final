@@ -1,0 +1,84 @@
+services:
+  # Aplicación Laravel (PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fishspot_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./docker/entrypoint.sh:/usr/local/bin/entrypoint.sh
+    networks:
+      - fishspot_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Servidor web Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: fishspot_nginx
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - fishspot_network
+    depends_on:
+      - app
+
+  # Base de datos MariaDB
+  db:
+    image: mariadb:11.4
+    container_name: fishspot_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-fishspot}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_USER: ${DB_USERNAME:-fishspot_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-fishspot_pass}
+    ports:
+      - "3307:3306"
+    volumes:
+      - fishspot_db_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - fishspot_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: fishspot_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: ${DB_USERNAME:-fishspot_user}
+      PMA_PASSWORD: ${DB_PASSWORD:-fishspot_pass}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    networks:
+      - fishspot_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  fishspot_network:
+    driver: bridge
+
+volumes:
+  fishspot_db_data:
+    driver: local

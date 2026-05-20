@@ -18,6 +18,7 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar',
+        'bio',
     ];
 
     protected $hidden = [
@@ -40,7 +41,7 @@ class User extends Authenticatable
 
     public function comentarios(): HasMany
     {
-        return $this->hasMany(Comentario::class);
+        return $this->hasMany(Comentario::class)->latest();
     }
 
     public function valoraciones(): HasMany
@@ -53,8 +54,43 @@ class User extends Authenticatable
         return $this->hasMany(Favorito::class);
     }
 
+    public function likes(): HasMany
+    {
+        return $this->hasMany(Like::class);
+    }
+
+    public function repostes(): HasMany
+    {
+        return $this->hasMany(Reposte::class);
+    }
+
+    // Publicaciones que ha guardado (favoritos)
     public function publicacionesFavoritas()
     {
         return $this->belongsToMany(Publicacion::class, 'favoritos');
+    }
+
+    // Publicaciones que ha dado like
+    public function publicacionesLiked()
+    {
+        return $this->belongsToMany(Publicacion::class, 'likes');
+    }
+
+    // Publicaciones que ha reposteado
+    public function publicacionesReposteadas()
+    {
+        return $this->belongsToMany(Publicacion::class, 'repostes');
+    }
+
+    // Usuarios que este usuario sigue
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id');
+    }
+
+    // Usuarios que siguen a este usuario
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
     }
 }

@@ -13,10 +13,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Usuario de prueba
-        User::factory()->create([
-            'name'  => 'Pescador Demo',
-            'email' => 'demo@fishspot.local',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'demo@fishspot.local'],
+            [
+                'name'     => 'Pescador Demo',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            ]
+        );
 
         // Etiquetas de especies
         $this->call(EtiquetaSeeder::class);
