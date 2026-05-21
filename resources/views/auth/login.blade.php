@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Iniciar sesión')
+@section('body-class', 'auth-bg')
 
 @section('content')
 <div class="auth-page">

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Etiqueta;
 use App\Models\Imagen;
+use App\Models\Like;
 use App\Models\Publicacion;
+use App\Models\Reposte;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,9 +17,49 @@ class PublicacionController extends Controller
 {
     public function index(): View
     {
-        $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes'])->latest()->get();
+        if (!Auth::check()) {
+            return view('welcome');
+        }
+
+        $user = Auth::user();
+        $followingIds = $user->following()->pluck('users.id');
+
+        if ($followingIds->isNotEmpty()) {
+            $ownIds     = Publicacion::where('user_id', $user->id)->pluck('id');
+            $followIds  = Publicacion::whereIn('user_id', $followingIds)->pluck('id');
+            $likedIds   = Like::whereIn('user_id', $followingIds)->pluck('publicacion_id');
+            $repostIds  = Reposte::whereIn('user_id', $followingIds)->pluck('publicacion_id');
+            $allIds     = $ownIds->merge($followIds)->merge($likedIds)->merge($repostIds)->unique();
+
+            $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
+                ->whereIn('id', $allIds)
+                ->latest()
+                ->get();
+        } else {
+            $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
+                ->latest()
+                ->get();
+        }
 
         return view('publicaciones.index', compact('publicaciones'));
+    }
+
+    public function buscar(Request $request): View
+    {
+        $q = trim($request->get('q', ''));
+        $etiquetas = Etiqueta::orderBy('nombre')->get();
+
+        $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes'])
+            ->when($q, function ($query) use ($q) {
+                $query->where(function ($q2) use ($q) {
+                    $q2->where('titulo', 'like', "%{$q}%")
+                       ->orWhere('descripcion', 'like', "%{$q}%");
+                });
+            })
+            ->latest()
+            ->get();
+
+        return view('publicaciones.buscar', compact('publicaciones', 'q', 'etiquetas'));
     }
 
     public function create(): View
@@ -37,7 +79,17 @@ class PublicacionController extends Controller
             'etiquetas'   => 'nullable|array',
             'etiquetas.*' => 'exists:etiquetas,id',
             'imagenes'    => 'nullable|array|max:8',
-            'imagenes.*'  => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'imagenes.*'  => [
+                'file',
+                'mimes:jpeg,jpg,png,webp,gif',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    $maxKb = $value->getMimeType() === 'image/gif' ? 15360 : 5120;
+                    if ($value->getSize() / 1024 > $maxKb) {
+                        $fail('Las imágenes admiten hasta 5 MB (GIFs hasta 15 MB).');
+                    }
+                },
+            ],
         ]);
 
         $publicacion = Publicacion::create([
@@ -73,11 +125,19 @@ class PublicacionController extends Controller
             'user',
             'imagenes',
             'etiquetas',
-            'comentarios.user',
-            'comentarios.imagenes',
             'likes',
             'repostes',
             'favoritos',
+            'comentarios' => function ($q) {
+                $q->whereNull('parent_id')
+                  ->with([
+                      'user', 'imagenes',
+                      'children.user', 'children.imagenes',
+                      'children.children.user', 'children.children.imagenes',
+                      'children.children.children.user', 'children.children.children.imagenes',
+                  ])
+                  ->latest();
+            },
         ]);
 
         $esLiked      = false;
@@ -120,7 +180,17 @@ class PublicacionController extends Controller
             'etiquetas'   => 'nullable|array',
             'etiquetas.*' => 'exists:etiquetas,id',
             'imagenes'    => 'nullable|array|max:8',
-            'imagenes.*'  => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'imagenes.*'  => [
+                'file',
+                'mimes:jpeg,jpg,png,webp,gif',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    $maxKb = $value->getMimeType() === 'image/gif' ? 15360 : 5120;
+                    if ($value->getSize() / 1024 > $maxKb) {
+                        $fail('Las imágenes admiten hasta 5 MB (GIFs hasta 15 MB).');
+                    }
+                },
+            ],
         ]);
 
         $publicacion->update([

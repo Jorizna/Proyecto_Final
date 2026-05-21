@@ -13,15 +13,31 @@ class ComentarioController extends Controller
     public function store(Request $request, Publicacion $publicacion): RedirectResponse
     {
         $validated = $request->validate([
-            'texto'      => 'required|string|max:1000',
+            'texto'      => 'nullable|string|max:1000',
+            'parent_id'  => 'nullable|exists:comentarios,id',
             'imagenes'   => 'nullable|array|max:4',
-            'imagenes.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'imagenes.*' => [
+                'file',
+                'mimes:jpeg,jpg,png,webp,gif',
+                function ($attribute, $value, $fail) {
+                    if (!$value) return;
+                    $maxKb = $value->getMimeType() === 'image/gif' ? 15360 : 5120;
+                    if ($value->getSize() / 1024 > $maxKb) {
+                        $fail('Las imágenes admiten hasta 5 MB (GIFs hasta 15 MB).');
+                    }
+                },
+            ],
         ]);
+
+        if (empty($validated['texto']) && !$request->hasFile('imagenes')) {
+            return back()->withErrors(['texto' => 'Escribe un mensaje o adjunta una imagen.']);
+        }
 
         $comentario = Comentario::create([
             'publicacion_id' => $publicacion->id,
             'user_id'        => Auth::id(),
-            'texto'          => $validated['texto'],
+            'parent_id'      => $validated['parent_id'] ?? null,
+            'texto'          => $validated['texto'] ?? null,
         ]);
 
         if ($request->hasFile('imagenes')) {
@@ -32,7 +48,8 @@ class ComentarioController extends Controller
         }
 
         return redirect()->route('publicaciones.show', $publicacion)
-            ->with('success', 'Respuesta añadida.');
+            ->with('success', 'Respuesta añadida.')
+            ->withFragment('respuestas');
     }
 
     public function destroy(Publicacion $publicacion, Comentario $comentario): RedirectResponse

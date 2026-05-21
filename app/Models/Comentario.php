@@ -16,6 +16,7 @@ class Comentario extends Model
     protected $fillable = [
         'publicacion_id',
         'user_id',
+        'parent_id',
         'texto',
     ];
 
@@ -27,6 +28,16 @@ class Comentario extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Comentario::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Comentario::class, 'parent_id')->latest();
     }
 
     public function imagenes(): HasMany

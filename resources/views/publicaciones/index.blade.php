@@ -1,194 +1,85 @@
 @extends('layouts.app')
 
-@section('title', 'Mapa de zonas de pesca')
-
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-<style>
-    .mapa-wrapper {
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 2rem;
-    }
-    #mapa { height: 520px; width: 100%; }
-    .leaflet-popup-content-wrapper { border-radius: 10px; min-width: 200px; }
-    .leaflet-popup-content { margin: 10px 12px; }
-    .popup-img { width: 100%; height: 110px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
-    .popup-titulo { font-weight: 700; font-size: .95rem; color: #1a4731; margin-bottom: 2px; }
-    .popup-likes { font-size: .82rem; color: #6b7280; margin-bottom: 4px; }
-    .popup-etiquetas { margin-bottom: 6px; display: flex; flex-wrap: wrap; gap: 3px; }
-    .popup-link {
-        display: block;
-        text-align: center;
-        margin-top: 6px;
-        padding: 5px 10px;
-        background: #2e7d52;
-        color: #fff;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: .85rem;
-        text-decoration: none;
-    }
-    .popup-link:hover { background: #1a4731; color: #fff; }
-    .marker-cluster-small div,
-    .marker-cluster-medium div,
-    .marker-cluster-large div {
-        background-color: rgba(46,125,82,.85);
-        color: #fff;
-        font-weight: 700;
-    }
-    .marker-cluster-small,
-    .marker-cluster-medium,
-    .marker-cluster-large { background-color: rgba(46,125,82,.25); }
-</style>
-@endpush
+@section('title', 'Inicio')
 
 @section('content')
-<div class="page-header">
-    <h1 class="page-header__title">Zonas de pesca en Aragón</h1>
-    <p class="page-header__subtitle">{{ $publicaciones->count() }} zonas publicadas por la comunidad</p>
+<div class="feed-header">
+    <p class="feed-header__eyebrow">Aragón · España</p>
+    <h1 class="feed-header__title">Zonas de Pesca</h1>
+    <p class="feed-header__sub">{{ $publicaciones->count() }} zonas publicadas por la comunidad</p>
 </div>
 
-<div class="mapa-wrapper">
-    <div id="mapa"></div>
-</div>
-
-<section class="section">
-    <h2 class="section__title">Últimas zonas publicadas</h2>
-
-    @if($publicaciones->isEmpty())
-        <div class="empty-state">
-            <p>Todavía no hay zonas publicadas.</p>
-            @auth
-                <a href="{{ route('publicaciones.create') }}" class="btn btn--primary">Sé el primero en publicar</a>
-            @endauth
-        </div>
-    @else
-        <div class="cards-grid">
-            @foreach($publicaciones->take(12) as $pub)
-                @php $primeraImagen = $pub->imagenes->first(); @endphp
-                <article class="card">
-                    @if($primeraImagen)
+@if($publicaciones->isEmpty())
+    <div class="empty-state">
+        <p>Todavía no hay zonas publicadas.</p>
+        <a href="{{ route('publicaciones.create') }}" class="btn btn--primary">Sé el primero en publicar</a>
+    </div>
+@else
+    <div class="feed-cascade">
+        @foreach($publicaciones as $pub)
+            @php $primeraImagen = $pub->imagenes->first(); @endphp
+            <article class="post-card">
+                @if($primeraImagen)
+                    <a href="{{ route('publicaciones.show', $pub) }}">
                         <img src="{{ asset('storage/' . $primeraImagen->ruta) }}"
-                             alt="{{ $pub->titulo }}"
-                             class="card__img">
-                    @else
-                        <div class="card__img card__img--placeholder">Sin imagen</div>
+                             alt="{{ $pub->titulo }}" class="post-card__img">
+                    </a>
+                @else
+                    <div class="post-card__img--placeholder">Sin imagen</div>
+                @endif
+
+                <div class="post-card__body">
+                    <div class="post-card__header">
+                        <a href="{{ route('usuarios.show', $pub->user) }}" class="post-card__author-link">
+                            @if($pub->user->avatar)
+                                <img src="{{ asset('storage/' . $pub->user->avatar) }}"
+                                     alt="{{ $pub->user->name }}" class="avatar avatar--sm">
+                            @else
+                                <div class="avatar avatar--sm avatar--placeholder">
+                                    {{ strtoupper(substr($pub->user->name, 0, 1)) }}
+                                </div>
+                            @endif
+                            <span class="post-card__author">{{ $pub->user->name }}</span>
+                        </a>
+                        <span class="post-card__date">{{ $pub->created_at->diffForHumans() }}</span>
+                    </div>
+
+                    <h3 class="post-card__title">
+                        <a href="{{ route('publicaciones.show', $pub) }}">{{ $pub->titulo }}</a>
+                    </h3>
+
+                    @if($pub->descripcion)
+                        <p class="post-card__desc">{{ $pub->descripcion }}</p>
                     @endif
 
-                    <div class="card__body">
-                        <h3 class="card__title">
-                            <a href="{{ route('publicaciones.show', $pub) }}">{{ $pub->titulo }}</a>
-                        </h3>
-                        <div class="card__meta">
-                            <span class="card__likes">
-                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                                </svg>
-                                {{ $pub->likes->count() }}
-                            </span>
-                            <span class="card__author">por {{ $pub->user->name }}</span>
+                    @if($pub->etiquetas->isNotEmpty())
+                        <div class="post-card__tags tags">
+                            @foreach($pub->etiquetas->take(4) as $etiqueta)
+                                <span class="tag">{{ $etiqueta->nombre }}</span>
+                            @endforeach
                         </div>
-                        @if($pub->etiquetas->isNotEmpty())
-                            <div class="tags">
-                                @foreach($pub->etiquetas as $etiqueta)
-                                    <span class="tag">{{ $etiqueta->nombre }}</span>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                </article>
-            @endforeach
-        </div>
-    @endif
-</section>
+                    @endif
+                </div>
+
+                <div class="post-card__footer">
+                    <span class="post-card__stat post-card__stat--like">
+                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                        {{ $pub->likes->count() }}
+                    </span>
+                    <span class="post-card__stat">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        {{ $pub->comentarios->count() }}
+                    </span>
+                    <a href="{{ route('publicaciones.show', $pub) }}" class="post-card__see-more">
+                        Ver zona →
+                    </a>
+                </div>
+            </article>
+        @endforeach
+    </div>
+@endif
 @endsection
-
-@push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-<script>
-(function () {
-    var mapa = L.map('mapa', { zoomControl: true }).setView([41.6, -0.9], 8);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 18,
-    }).addTo(mapa);
-
-    var icono = L.divIcon({
-        html: '<div class="marker-pin"></div>',
-        className: '',
-        iconSize: [28, 28],
-        iconAnchor: [14, 28],
-        popupAnchor: [0, -30],
-    });
-
-    var capa = (typeof L.markerClusterGroup === 'function')
-        ? L.markerClusterGroup({ maxClusterRadius: 60, showCoverageOnHover: false })
-        : mapa;
-
-    @php
-    $mapData = $publicaciones->map(function ($p) {
-        $imagen = $p->imagenes->first();
-        return [
-            'id'       => $p->id,
-            'titulo'   => $p->titulo,
-            'lat'      => (float) $p->latitud,
-            'lng'      => (float) $p->longitud,
-            'url'      => route('publicaciones.show', $p),
-            'likes'    => $p->likes->count(),
-            'imagen'   => $imagen ? asset('storage/' . $imagen->ruta) : null,
-            'etiquetas'=> $p->etiquetas->pluck('nombre')->values(),
-        ];
-    })->values();
-    @endphp
-
-    var zonas = @json($mapData);
-
-    zonas.forEach(function (zona) {
-        if (!zona.lat || !zona.lng) return;
-
-        var marker = L.marker([zona.lat, zona.lng], { icon: icono });
-
-        var imgHtml = zona.imagen
-            ? '<img src="' + zona.imagen + '" class="popup-img" alt="">'
-            : '';
-
-        var etiquetasHtml = '';
-        if (zona.etiquetas && zona.etiquetas.length) {
-            etiquetasHtml = '<div class="popup-etiquetas">';
-            zona.etiquetas.forEach(function (e) {
-                etiquetasHtml += '<span class="tag">' + e + '</span>';
-            });
-            etiquetasHtml += '</div>';
-        }
-
-        marker.bindPopup(
-            imgHtml
-            + '<div class="popup-titulo">' + zona.titulo + '</div>'
-            + '<div class="popup-likes">' + zona.likes + ' likes</div>'
-            + etiquetasHtml
-            + '<a href="' + zona.url + '" class="popup-link">Ver detalle</a>',
-            { maxWidth: 220 }
-        );
-
-        marker.on('click', function () {
-            mapa.flyTo([zona.lat, zona.lng], 14, { animate: true, duration: 0.8 });
-        });
-
-        if (capa === mapa) {
-            marker.addTo(mapa);
-        } else {
-            capa.addLayer(marker);
-        }
-    });
-
-    if (capa !== mapa) {
-        mapa.addLayer(capa);
-    }
-}());
-</script>
-@endpush

@@ -66,6 +66,7 @@ class PerfilController extends Controller
             'email'  => 'required|email|unique:users,email,' . $user->id,
             'bio'    => 'nullable|string|max:500',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'banner' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -73,6 +74,13 @@ class PerfilController extends Controller
                 Storage::disk('public')->delete($user->avatar);
             }
             $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        if ($request->hasFile('banner')) {
+            if ($user->banner) {
+                Storage::disk('public')->delete($user->banner);
+            }
+            $validated['banner'] = $request->file('banner')->store('banners', 'public');
         }
 
         $user->update($validated);

@@ -80,9 +80,19 @@
         @endif
 
         <div class="form__group">
-            <label class="form__label" for="imagenes">Añadir imágenes</label>
-            <input type="file" id="imagenes" name="imagenes[]" class="form-control"
-                   accept="image/jpeg,image/png,image/webp" multiple>
+            <label class="form__label">Añadir imágenes (JPG, PNG, WEBP, GIF — máx. 5 MB cada una)</label>
+            <label class="upload-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Añadir imágenes
+                <input type="file" id="imagenes" name="imagenes[]"
+                       accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                       multiple>
+            </label>
+            <span id="edit-imgs-label" style="font-size:.8rem;color:#6B7280;margin-left:.5rem"></span>
         </div>
 
         <div class="form__actions">
@@ -112,6 +122,11 @@
         document.getElementById('longitud').value = lng.toFixed(7);
         if (marker) marker.remove();
         marker = L.marker([lat, lng]).addTo(mapa);
+    });
+    document.getElementById('imagenes').addEventListener('change', function () {
+        const lbl = document.getElementById('edit-imgs-label');
+        const files = Array.from(this.files);
+        lbl.textContent = files.length ? files.length + ' archivo' + (files.length > 1 ? 's' : '') + ' seleccionado' + (files.length > 1 ? 's' : '') : '';
     });
 </script>
 @endpush

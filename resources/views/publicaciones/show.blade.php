@@ -2,11 +2,15 @@
 
 @section('title', $publicacion->titulo)
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+@endpush
+
 @section('content')
 <div class="post-wrapper">
     <article class="post">
 
-        {{-- ── Cabecera ── --}}
+        {{-- ── 1. POST HEADER ── --}}
         <header class="post__header">
             <a href="{{ route('usuarios.show', $publicacion->user) }}" class="post__avatar-link">
                 @if($publicacion->user->avatar)
@@ -34,46 +38,114 @@
             </div>
 
             @can('update', $publicacion)
-                <div class="post__edit-actions">
-                    <a href="{{ route('publicaciones.edit', $publicacion) }}"
-                       class="btn btn--secondary btn--sm">Editar</a>
-                    <form method="POST" action="{{ route('publicaciones.destroy', $publicacion) }}"
-                          onsubmit="return confirm('¿Eliminar esta zona?')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn--danger btn--sm">Eliminar</button>
-                    </form>
+                <div class="post-actions">
+                    <button class="post-actions__trigger" data-actions-trigger aria-label="Opciones">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                            <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                        </svg>
+                    </button>
+                    <div class="post-actions__dropdown">
+                        <a href="{{ route('publicaciones.edit', $publicacion) }}" class="post-actions__item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="15" height="15">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Editar zona
+                        </a>
+                        <form method="POST" action="{{ route('publicaciones.destroy', $publicacion) }}"
+                              id="delete-pub-{{ $publicacion->id }}">
+                            @csrf @method('DELETE')
+                            <button type="button" class="post-actions__item post-actions__item--danger"
+                                    onclick="document.getElementById('delete-pub-{{ $publicacion->id }}').submit()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="15" height="15">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                    <path d="M10 11v6M14 11v6"/>
+                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
+                                Eliminar zona
+                            </button>
+                        </form>
+                    </div>
                 </div>
             @endcan
         </header>
 
-        {{-- ── Contenido ── --}}
+        {{-- ── 2. TITLE & DESCRIPTION ── --}}
         <div class="post__body">
             <h1 class="post__titulo">{{ $publicacion->titulo }}</h1>
-            <p class="post__descripcion">{{ $publicacion->descripcion }}</p>
-
-            @if($publicacion->imagenes->isNotEmpty())
-                @php $imgs = $publicacion->imagenes; $n = min($imgs->count(), 4); @endphp
-                <div class="fotos-grid fotos-grid--{{ $n }}">
-                    @foreach($imgs->take(4) as $img)
-                        <div class="fotos-grid__item">
-                            <img src="{{ asset('storage/' . $img->ruta) }}" alt="">
-                            @can('update', $publicacion)
-                                <form method="POST"
-                                      action="{{ route('publicaciones.imagenes.destroy', [$publicacion, $img]) }}"
-                                      class="fotos-grid__delete">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn-icon" title="Eliminar imagen">✕</button>
-                                </form>
-                            @endcan
-                        </div>
-                    @endforeach
-                </div>
+            @if($publicacion->descripcion)
+                <p class="post__descripcion">{{ $publicacion->descripcion }}</p>
             @endif
         </div>
 
-        {{-- ── Barra de interacciones ── --}}
+        {{-- ── 3. MAP WIDGET ── --}}
+        @if($publicacion->latitud && $publicacion->longitud)
+            <div class="post-map-widget">
+                <div id="post-mini-map"></div>
+            </div>
+        @endif
+
+        {{-- ── 4. IMAGE CAROUSEL ── --}}
+        @if($publicacion->imagenes->isNotEmpty())
+            @php $imgs = $publicacion->imagenes; $n = $imgs->count(); @endphp
+            @if($n === 1)
+                <div class="carousel carousel--single">
+                    <div class="carousel__track" data-carousel-track>
+                        <div class="carousel__slide">
+                            <img src="{{ asset('storage/' . $imgs->first()->ruta) }}" alt="{{ $publicacion->titulo }}">
+                        </div>
+                    </div>
+                    @can('update', $publicacion)
+                        <form method="POST"
+                              action="{{ route('publicaciones.imagenes.destroy', [$publicacion, $imgs->first()]) }}"
+                              class="fotos-grid__delete" style="position:absolute;top:.5rem;right:.5rem;z-index:20">
+                            @csrf @method('DELETE')
+                            <button type="button" class="btn-icon" title="Eliminar imagen"
+                                    onclick="if(confirm('¿Eliminar esta imagen?')) this.closest('form').submit()">✕</button>
+                        </form>
+                    @endcan
+                </div>
+            @else
+                <div class="carousel" id="post-carousel">
+                    <div class="carousel__track" data-carousel-track>
+                        @foreach($imgs as $img)
+                            <div class="carousel__slide">
+                                <img src="{{ asset('storage/' . $img->ruta) }}" alt="{{ $publicacion->titulo }}">
+                                @can('update', $publicacion)
+                                    <form method="POST"
+                                          action="{{ route('publicaciones.imagenes.destroy', [$publicacion, $img]) }}"
+                                          style="position:absolute;top:.5rem;right:.5rem;z-index:20">
+                                        @csrf @method('DELETE')
+                                        <button type="button" class="btn-icon" title="Eliminar"
+                                                onclick="if(confirm('¿Eliminar esta imagen?')) this.closest('form').submit()">✕</button>
+                                    </form>
+                                @endcan
+                            </div>
+                        @endforeach
+                    </div>
+                    <button class="carousel__btn carousel__btn--prev" aria-label="Anterior">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                    </button>
+                    <button class="carousel__btn carousel__btn--next" aria-label="Siguiente">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                    <div class="carousel__dots">
+                        @foreach($imgs as $i => $img)
+                            <button class="carousel__dot {{ $i === 0 ? 'carousel__dot--active' : '' }}"
+                                    aria-label="Imagen {{ $i + 1 }}"></button>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        @endif
+
+        {{-- ── 5. INTERACTIONS ── --}}
         <div class="interactions">
-            {{-- Like --}}
             <form method="POST" action="{{ route('likes.toggle', $publicacion) }}">
                 @csrf
                 <button type="submit"
@@ -87,7 +159,6 @@
                 </button>
             </form>
 
-            {{-- Repost --}}
             <form method="POST" action="{{ route('repostes.toggle', $publicacion) }}">
                 @csrf
                 <button type="submit"
@@ -106,7 +177,6 @@
 
             <div class="interactions__spacer"></div>
 
-            {{-- Guardar --}}
             <form method="POST" action="{{ route('favoritos.toggle', $publicacion) }}">
                 @csrf
                 <button type="submit"
@@ -121,13 +191,13 @@
             </form>
         </div>
 
-        {{-- ── Respuestas ── --}}
+        {{-- ── 6. REPLIES ── --}}
         <div class="replies" id="respuestas">
+            <div class="replies__header">Respuestas</div>
 
-            {{-- Compositor de respuesta --}}
             @auth
                 <form method="POST" action="{{ route('comentarios.store', $publicacion) }}"
-                      class="reply-composer" enctype="multipart/form-data" id="reply-form">
+                      class="reply-composer" enctype="multipart/form-data">
                     @csrf
                     <div class="reply-composer__avatar">
                         @if(auth()->user()->avatar)
@@ -141,18 +211,19 @@
                     </div>
                     <div class="reply-composer__content">
                         <textarea name="texto" class="reply-composer__textarea"
-                                  placeholder="Escribe tu respuesta..." required maxlength="1000"
+                                  placeholder="Escribe tu respuesta..." maxlength="1000"
                                   rows="2"></textarea>
                         <div id="img-preview" class="reply-preview"></div>
                         <div class="reply-composer__toolbar">
-                            <label class="reply-toolbar-btn" title="Adjuntar imágenes (máx. 4)">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
+                            <label class="upload-btn" title="Adjuntar imágenes (máx. 4)">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16">
                                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                                     <circle cx="8.5" cy="8.5" r="1.5"/>
                                     <polyline points="21 15 16 10 5 21"/>
                                 </svg>
+                                Añadir imagen
                                 <input type="file" name="imagenes[]" accept="image/*" multiple
-                                       class="sr-only" id="reply-imgs" max="4">
+                                       id="reply-imgs" max="4">
                             </label>
                             <span id="reply-imgs-label" class="reply-imgs-label"></span>
                             <button type="submit" class="btn btn--primary btn--sm">Responder</button>
@@ -165,46 +236,13 @@
                 </p>
             @endauth
 
-            {{-- Lista de respuestas --}}
+            {{-- ── Reply list — nested boxed layout ── --}}
             @forelse($publicacion->comentarios as $comentario)
-                <div class="reply-item">
-                    <a href="{{ route('usuarios.show', $comentario->user) }}" class="reply-item__avatar-link">
-                        @if($comentario->user->avatar)
-                            <img src="{{ asset('storage/' . $comentario->user->avatar) }}"
-                                 alt="{{ $comentario->user->name }}" class="avatar avatar--sm">
-                        @else
-                            <div class="avatar avatar--sm avatar--placeholder">
-                                {{ strtoupper(substr($comentario->user->name, 0, 1)) }}
-                            </div>
-                        @endif
-                    </a>
-                    <div class="reply-item__body">
-                        <div class="reply-item__header">
-                            <a href="{{ route('usuarios.show', $comentario->user) }}"
-                               class="reply-item__author">{{ $comentario->user->name }}</a>
-                            <span class="reply-item__fecha">{{ $comentario->created_at->diffForHumans() }}</span>
-                            @if(auth()->id() === $comentario->user_id)
-                                <form method="POST"
-                                      action="{{ route('comentarios.destroy', [$publicacion, $comentario]) }}"
-                                      style="margin-left:auto">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn-icon btn-icon--danger" title="Eliminar">✕</button>
-                                </form>
-                            @endif
-                        </div>
-                        <p class="reply-item__texto">{{ $comentario->texto }}</p>
-                        @if($comentario->imagenes->isNotEmpty())
-                            @php $ri = $comentario->imagenes; $rn = min($ri->count(), 4); @endphp
-                            <div class="fotos-grid fotos-grid--{{ $rn }} fotos-grid--sm">
-                                @foreach($ri->take(4) as $rim)
-                                    <div class="fotos-grid__item">
-                                        <img src="{{ asset('storage/' . $rim->ruta) }}" alt="">
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                </div>
+                @include('publicaciones._reply', [
+                    'comment'     => $comentario,
+                    'depth'       => 0,
+                    'publicacion' => $publicacion,
+                ])
             @empty
                 <p class="replies__empty">Sin respuestas todavía. ¡Sé el primero!</p>
             @endforelse
@@ -215,22 +253,85 @@
 @endsection
 
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+/* Mini-map */
 (function () {
-    const input  = document.getElementById('reply-imgs');
-    const label  = document.getElementById('reply-imgs-label');
-    const preview = document.getElementById('img-preview');
+    var el = document.getElementById('post-mini-map');
+    if (!el) return;
+    var lat = {{ $publicacion->latitud ?? 'null' }};
+    var lng = {{ $publicacion->longitud ?? 'null' }};
+    if (!lat || !lng) return;
 
+    var mapa = L.map('post-mini-map', { zoomControl: true, scrollWheelZoom: false })
+                .setView([lat, lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap', maxZoom: 18
+    }).addTo(mapa);
+
+    var icono = L.divIcon({
+        html: '<div class="marker-pin"></div>',
+        className: '', iconSize: [28,28], iconAnchor: [14,28], popupAnchor: [0,-30]
+    });
+
+    L.marker([lat, lng], { icon: icono })
+     .addTo(mapa)
+     .bindPopup('<strong>{{ addslashes($publicacion->titulo) }}</strong>')
+     .openPopup();
+}());
+
+/* Carousel */
+(function () {
+    var carousel = document.getElementById('post-carousel');
+    if (!carousel) return;
+    var track   = carousel.querySelector('[data-carousel-track]');
+    var slides  = carousel.querySelectorAll('.carousel__slide');
+    var btnPrev = carousel.querySelector('.carousel__btn--prev');
+    var btnNext = carousel.querySelector('.carousel__btn--next');
+    var dots    = carousel.querySelectorAll('.carousel__dot');
+    var current = 0;
+    var total   = slides.length;
+
+    function goTo(n) {
+        current = Math.max(0, Math.min(n, total - 1));
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        if (btnPrev) btnPrev.disabled = current === 0;
+        if (btnNext) btnNext.disabled = current === total - 1;
+        dots.forEach(function (d, i) {
+            d.classList.toggle('carousel__dot--active', i === current);
+        });
+    }
+
+    if (btnPrev) btnPrev.addEventListener('click', function () { goTo(current - 1); });
+    if (btnNext) btnNext.addEventListener('click', function () { goTo(current + 1); });
+    dots.forEach(function (d, i) { d.addEventListener('click', function () { goTo(i); }); });
+
+    var startX = 0;
+    carousel.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+    carousel.addEventListener('touchend', function (e) {
+        var diff = startX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 50) goTo(diff > 0 ? current + 1 : current - 1);
+    });
+
+    goTo(0);
+}());
+
+/* Image preview for main reply composer */
+(function () {
+    var input   = document.getElementById('reply-imgs');
+    var label   = document.getElementById('reply-imgs-label');
+    var preview = document.getElementById('img-preview');
     if (!input) return;
 
     input.addEventListener('change', function () {
-        const files = Array.from(this.files).slice(0, 4);
+        var files = Array.from(this.files).slice(0, 4);
         label.textContent = files.length ? files.length + ' imagen' + (files.length > 1 ? 'es' : '') : '';
         preview.innerHTML = '';
         files.forEach(function (file) {
-            const reader = new FileReader();
+            var reader = new FileReader();
             reader.onload = function (e) {
-                const img = document.createElement('img');
+                var img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'reply-preview__thumb';
                 preview.appendChild(img);
@@ -239,5 +340,25 @@
         });
     });
 }());
+
+/* Toggle inline reply composer */
+function toggleChildComposer(commentId) {
+    var el = document.getElementById('child-composer-' + commentId);
+    if (!el) return;
+    el.classList.toggle('is-open');
+    if (el.classList.contains('is-open')) el.querySelector('textarea').focus();
+}
+
+/* Toggle nested child replies — independent per comment, recursive-safe */
+function toggleReplies(id, btn) {
+    var replies = document.getElementById('replies-' + id);
+    if (!replies) return;
+    var opening = !replies.classList.contains('is-open');
+    replies.classList.toggle('is-open');
+    var count = btn.dataset.count;
+    btn.innerHTML = opening
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="18 15 12 9 6 15"/></svg> Ocultar respuestas'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="6 9 12 15 18 9"/></svg> Ver respuestas (' + count + ')';
+}
 </script>
 @endpush
