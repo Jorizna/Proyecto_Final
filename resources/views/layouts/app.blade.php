@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}" sizes="32x32">
+    <link rel="apple-touch-icon" href="{{ asset('images/favicon.png') }}">
     <title>@yield('title', 'FishSpot') — FishSpot</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -65,13 +67,16 @@
                     Explorar
                 </a>
 
-                <a href="{{ route('perfil.show') }}"
-                   class="sidebar-nav__link {{ request()->routeIs('perfil.*') ? 'sidebar-nav__link--active' : '' }}">
+                <a href="{{ route('guias.index') }}"
+                   class="sidebar-nav__link {{ request()->routeIs('guias.*') ? 'sidebar-nav__link--active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        <line x1="10" y1="7" x2="16" y2="7"/>
+                        <line x1="10" y1="11" x2="16" y2="11"/>
+                        <line x1="10" y1="15" x2="14" y2="15"/>
                     </svg>
-                    Mi perfil
+                    Equipos y Guías
                 </a>
 
                 <a href="{{ route('guardados.index') }}"
@@ -97,16 +102,13 @@
                     @endif
                 </a>
 
-                <a href="{{ route('guias.index') }}"
-                   class="sidebar-nav__link {{ request()->routeIs('guias.*') ? 'sidebar-nav__link--active' : '' }}">
+                <a href="{{ route('perfil.show') }}"
+                   class="sidebar-nav__link {{ request()->routeIs('perfil.*') ? 'sidebar-nav__link--active' : '' }}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                        <line x1="10" y1="7" x2="16" y2="7"/>
-                        <line x1="10" y1="11" x2="16" y2="11"/>
-                        <line x1="10" y1="15" x2="14" y2="15"/>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
                     </svg>
-                    Equipos y Guías
+                    Mi perfil
                 </a>
 
                 <a href="{{ route('publicaciones.create') }}" class="sidebar-nav__link sidebar-nav__link--cta">
@@ -318,8 +320,16 @@
 <script>
 /* Global 3-dot dropdown handler */
 (function () {
+    var CARD_SEL = '.profile-post-card, .post-card';
+    var OPEN_CLS = 'menu-open';
+
+    function clearOpenCards() {
+        document.querySelectorAll('.' + OPEN_CLS).forEach(function (c) {
+            c.classList.remove(OPEN_CLS);
+        });
+    }
+
     document.addEventListener('click', function (e) {
-        var inMenu = e.target.closest('.post-actions');
         var trigger = e.target.closest('[data-actions-trigger]');
 
         /* Close every open dropdown that is not the one we're interacting with */
@@ -333,6 +343,15 @@
             e.stopPropagation();
             var dropdown = trigger.closest('.post-actions').querySelector('.post-actions__dropdown');
             dropdown.classList.toggle('is-open');
+
+            /* Eleva el card con el menú abierto para que quede por encima de los demás */
+            clearOpenCards();
+            if (dropdown.classList.contains('is-open')) {
+                var card = trigger.closest(CARD_SEL);
+                if (card) card.classList.add(OPEN_CLS);
+            }
+        } else {
+            clearOpenCards();
         }
     });
 
@@ -342,6 +361,7 @@
             document.querySelectorAll('.post-actions__dropdown.is-open').forEach(function (d) {
                 d.classList.remove('is-open');
             });
+            clearOpenCards();
         }
     });
 }());

@@ -7,6 +7,7 @@ use App\Models\Imagen;
 use App\Models\Like;
 use App\Models\Publicacion;
 use App\Models\Reposte;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,24 +22,30 @@ class PublicacionController extends Controller
             return view('welcome');
         }
 
-        $user = Auth::user();
-        $followingIds = $user->following()->pluck('users.id');
+        $user         = Auth::user();
+        $followingIds = $user->following()->pluck('users.id')->toArray();
 
-        if ($followingIds->isNotEmpty()) {
-            $ownIds     = Publicacion::where('user_id', $user->id)->pluck('id');
-            $followIds  = Publicacion::whereIn('user_id', $followingIds)->pluck('id');
-            $likedIds   = Like::whereIn('user_id', $followingIds)->pluck('publicacion_id');
-            $repostIds  = Reposte::whereIn('user_id', $followingIds)->pluck('publicacion_id');
-            $allIds     = $ownIds->merge($followIds)->merge($likedIds)->merge($repostIds)->unique();
+        if (!empty($followingIds)) {
+            // Tier-1 IDs: posts from followed users + posts liked/reposted by followed users
+            $tier1Ids = Publicacion::whereIn('user_id', $followingIds)->pluck('id')
+                ->merge(Like::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
+                ->merge(Reposte::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
+                ->unique()
+                ->values()
+                ->toArray();
+
+            $inList = implode(',', $tier1Ids ?: [0]);
 
             $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
-                ->whereIn('id', $allIds)
+                ->where('user_id', '!=', $user->id)
+                ->orderByRaw("CASE WHEN id IN ({$inList}) THEN 0 ELSE 1 END")
                 ->latest()
-                ->get();
+                ->paginate(20);
         } else {
             $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
+                ->where('user_id', '!=', $user->id)
                 ->latest()
-                ->get();
+                ->paginate(20);
         }
 
         return view('publicaciones.index', compact('publicaciones'));
@@ -113,7 +120,7 @@ class PublicacionController extends Controller
 
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $orden => $imagen) {
-                $ruta = $imagen->store('publicaciones', 'public');
+                $ruta = ImageService::store($imagen, 'publicaciones');
                 Imagen::create([
                     'publicacion_id' => $publicacion->id,
                     'ruta'           => $ruta,
@@ -215,7 +222,7 @@ class PublicacionController extends Controller
 
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $orden => $imagen) {
-                $ruta = $imagen->store('publicaciones', 'public');
+                $ruta = ImageService::store($imagen, 'publicaciones');
                 Imagen::create([
                     'publicacion_id' => $publicacion->id,
                     'ruta'           => $ruta,

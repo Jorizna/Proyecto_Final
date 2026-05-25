@@ -6,7 +6,7 @@
 <div class="feed-header">
     <p class="feed-header__eyebrow">FishSpot · España</p>
     <h1 class="feed-header__title">Zonas de Pesca</h1>
-    <p class="feed-header__sub">{{ $publicaciones->count() }} zonas publicadas por la comunidad</p>
+    <p class="feed-header__sub">{{ $publicaciones->total() }} zonas publicadas por la comunidad</p>
 </div>
 
 @if($publicaciones->isEmpty())
@@ -80,5 +80,7 @@
             </article>
         @endforeach
     </div>
+
+    {{ $publicaciones->links('pagination.fishspot') }}
 @endif
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,14 +74,14 @@ class PerfilController extends Controller
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-            $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = ImageService::storeAvatar($request->file('avatar'));
         }
 
         if ($request->hasFile('banner')) {
             if ($user->banner) {
                 Storage::disk('public')->delete($user->banner);
             }
-            $validated['banner'] = $request->file('banner')->store('banners', 'public');
+            $validated['banner'] = ImageService::storeBanner($request->file('banner'));
         }
 
         $user->update($validated);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notificacion;
 use App\Models\Tutorial;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -34,7 +35,7 @@ class TutorialController extends Controller
         $data = $request->only('titulo', 'categoria', 'contenido');
 
         if ($request->hasFile('imagen')) {
-            $data['imagen_cabecera'] = $request->file('imagen')->store('tutoriales', 'public');
+            $data['imagen_cabecera'] = ImageService::store($request->file('imagen'), 'tutoriales', maxWidth: 1200);
         }
 
         $tutorial = $request->user()->tutoriales()->create($data);

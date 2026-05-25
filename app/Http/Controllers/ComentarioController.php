@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comentario;
 use App\Models\Notificacion;
 use App\Models\Publicacion;
+use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +44,7 @@ class ComentarioController extends Controller
 
         if ($request->hasFile('imagenes')) {
             foreach ($request->file('imagenes') as $orden => $file) {
-                $ruta = $file->store('comentarios', 'public');
+                $ruta = ImageService::store($file, 'comentarios', maxWidth: 1200, quality: 80);
                 $comentario->imagenes()->create(['ruta' => $ruta, 'orden' => $orden]);
             }
         }

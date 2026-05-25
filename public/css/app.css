@@ -985,7 +985,7 @@ body.app {
         url('/images/pesca.png') center / cover no-repeat;
     border-right: 1px solid rgba(0, 0, 0, 0.07);
     border-radius: 0;
-    padding: 1.75rem 1.5rem;
+    padding: 1.5rem 1rem 1.25rem;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -1027,91 +1027,104 @@ body.app {
     align-items: center;
     gap: 0.625rem;
     font-weight: 800;
-    font-size: 0.975rem;
-    letter-spacing: -0.04em;
+    font-size: 1.05rem;
+    letter-spacing: -0.045em;
     color: var(--c-brand);
     text-decoration: none;
-    padding: 0 0.25rem;
-    margin-bottom: 1.625rem;
+    padding: 0.5rem 0.625rem;
+    margin-bottom: 1.25rem;
     flex-shrink: 0;
 }
+.sidebar-logo svg { width: 22px; height: 22px; }
 .sidebar-logo:hover { color: var(--c-brand-d); text-decoration: none; }
 
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    justify-content: space-between;
     flex: 1;
+    gap: 0;
 }
 .sidebar-nav__link {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.65rem 0.875rem;
-    border-radius: var(--r-md);
-    font-size: 0.88rem;
-    font-weight: 500;
-    color: var(--c-text-2);
+    gap: 0.875rem;
+    width: 100%;
+    padding: 1.2rem 1.125rem;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #4B5563;
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.18s, color 0.18s;
 }
+/* Override inline SVG sizes for all nav icons */
+.sidebar-nav__link svg { width: 23px; height: 23px; flex-shrink: 0; }
 .sidebar-nav__link:hover {
-    background: rgba(0, 153, 255, 0.06);
+    background: rgba(0, 153, 255, 0.08);
     color: var(--c-brand);
     text-decoration: none;
 }
 .sidebar-nav__link--active {
-    color: var(--c-brand);
+    background: var(--c-brand);
+    color: #fff;
     font-weight: 700;
-    background: rgba(0, 153, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 153, 255, 0.30);
+}
+.sidebar-nav__link--active:hover {
+    background: var(--c-brand-d);
+    color: #fff;
 }
 .sidebar-nav__link--cta {
     background: var(--c-brand);
     color: #fff !important;
-    font-weight: 600;
-    margin-top: 0.625rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 153, 255, 0.28);
 }
 .sidebar-nav__link--cta:hover {
     background: var(--c-brand-d);
     color: #fff !important;
-    box-shadow: 0 4px 14px rgba(0, 153, 255, 0.30);
+    box-shadow: 0 6px 20px rgba(0, 153, 255, 0.38);
 }
 
 /* Sidebar profile bottom */
 .sidebar-profile {
-    margin-top: auto;
-    padding-top: 1rem;
+    padding-top: 1.125rem;
     border-top: var(--border);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     min-width: 0;
 }
 .sidebar-profile__avatar-link { flex-shrink: 0; text-decoration: none; }
 .sidebar-profile__info { flex: 1; min-width: 0; }
 .sidebar-profile__name {
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.855rem;
     letter-spacing: -0.02em;
+    color: #1A1A1A;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 .sidebar-profile__email {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--c-text-2);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin-top: 0.1rem;
 }
 .sidebar-logout-form { flex-shrink: 0; }
 .sidebar-logout {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px; height: 32px;
-    border-radius: var(--r-sm);
-    color: var(--c-text-2);
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    color: #9CA3AF;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -1635,6 +1648,23 @@ body.app {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
+}
+/* Card con el menú abierto: se eleva sobre todos los demás */
+.profile-post-card.menu-open,
+.post-card.menu-open {
+    position: relative;
+    z-index: 200;
+}
+/* Mientras hay un menú abierto, el hover de los demás cards no crea stacking context */
+.profile-post-card.menu-open ~ .profile-post-card:hover,
+.profile-post-card:has(~ .profile-post-card.menu-open):hover {
+    transform: none !important;
+}
+/* Fallback :has() para navegadores modernos */
+.profile-post-card:has(.post-actions__dropdown.is-open),
+.post-card:has(.post-actions__dropdown.is-open) {
+    position: relative;
+    z-index: 200;
 }
 
 .post-actions__item {
@@ -2970,6 +3000,14 @@ body.app--explore #explore-mapa {
    NOTIFICATIONS MODULE
    ══════════════════════════════════════ */
 
+/* Active link: force white on svg strokes/fills inherited via currentColor */
+.sidebar-nav__link--active svg { color: #fff; }
+/* Badge on active link: dark blue pill so it contrasts against white bg */
+.sidebar-nav__link--active .sidebar-notif-badge {
+    background: rgba(255,255,255,0.25);
+    color: #fff;
+}
+
 /* ── Sidebar badge ── */
 .sidebar-notif-badge {
     display: inline-flex;
@@ -3176,3 +3214,40 @@ body.app--explore #explore-mapa {
     white-space: nowrap;
 }
 .user-search-row__arrow { color: #9CA3AF; flex-shrink: 0; }
+
+/* ── Pagination ── */
+.pagination-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.25rem 0 0.5rem;
+}
+.pagination-nav__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--c-brand);
+    text-decoration: none;
+    padding: 0.45rem 1rem;
+    border-radius: 100px;
+    background: rgba(0,153,255,0.08);
+    border: 1px solid rgba(0,153,255,0.18);
+    transition: background 0.15s, border-color 0.15s;
+}
+.pagination-nav__btn:hover { background: rgba(0,153,255,0.16); border-color: rgba(0,153,255,0.3); text-decoration: none; }
+.pagination-nav__btn--disabled {
+    color: #9CA3AF;
+    background: #F4F5F6;
+    border-color: transparent;
+    cursor: default;
+    pointer-events: none;
+}
+.pagination-nav__info {
+    font-size: 0.8rem;
+    color: #6B7280;
+    font-weight: 500;
+    padding: 0 0.25rem;
+}
