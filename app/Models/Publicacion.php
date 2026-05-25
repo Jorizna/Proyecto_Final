@@ -14,20 +14,45 @@ class Publicacion extends Model
 
     protected $table = 'publicaciones';
 
+    const TEMPORADAS = [
+        'invierno'  => 'Invierno / Aguas Frías',
+        'primavera' => 'Primavera / Media Estación',
+        'verano'    => 'Verano / Alta Actividad',
+        'otono'     => 'Otoño / Depredadores',
+    ];
+
+    const LICENCIAS = [
+        'interauton' => 'Licencia Interautonómica',
+        'auton_1'    => 'Licencia Autonómica (1 Año)',
+        'auton_5'    => 'Licencia Autonómica (5 Años)',
+        'coto'       => 'Permiso de Coto Federado',
+        'mar'        => 'Licencia de Mar / Costa',
+    ];
+
     protected $fillable = [
         'user_id',
         'titulo',
         'descripcion',
         'latitud',
         'longitud',
-        'valoracion_media',
+        'temporada',
+        'licencia',
     ];
 
     protected $casts = [
-        'latitud' => 'float',
+        'latitud'  => 'float',
         'longitud' => 'float',
-        'valoracion_media' => 'float',
     ];
+
+    public function temporadaLabel(): string
+    {
+        return self::TEMPORADAS[$this->temporada] ?? '—';
+    }
+
+    public function licenciaLabel(): string
+    {
+        return self::LICENCIAS[$this->licencia] ?? '—';
+    }
 
     public function user(): BelongsTo
     {
@@ -37,11 +62,6 @@ class Publicacion extends Model
     public function comentarios(): HasMany
     {
         return $this->hasMany(Comentario::class);
-    }
-
-    public function valoraciones(): HasMany
-    {
-        return $this->hasMany(Valoracion::class);
     }
 
     public function imagenes(): HasMany

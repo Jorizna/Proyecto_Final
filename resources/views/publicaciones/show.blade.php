@@ -74,6 +74,34 @@
         {{-- ── 2. TITLE & DESCRIPTION ── --}}
         <div class="post__body">
             <h1 class="post__titulo">{{ $publicacion->titulo }}</h1>
+
+            {{-- Metadata strip: temporada + licencia --}}
+            @if($publicacion->temporada || $publicacion->licencia)
+                <div class="post-meta-strip">
+                    @if($publicacion->temporada)
+                        <div class="post-meta-item post-meta-item--season">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="13" height="13">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            <span class="post-meta-item__label">Temporada</span>
+                            <span class="post-meta-item__value">{{ $publicacion->temporadaLabel() }}</span>
+                        </div>
+                    @endif
+                    @if($publicacion->licencia)
+                        <div class="post-meta-item post-meta-item--license">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="13" height="13">
+                                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                                <line x1="12" y1="12" x2="12" y2="16"/>
+                                <line x1="10" y1="14" x2="14" y2="14"/>
+                            </svg>
+                            <span class="post-meta-item__label">Licencia</span>
+                            <span class="post-meta-item__value">{{ $publicacion->licenciaLabel() }}</span>
+                        </div>
+                    @endif
+                </div>
+            @endif
+
             @if($publicacion->descripcion)
                 <p class="post__descripcion">{{ $publicacion->descripcion }}</p>
             @endif
@@ -93,7 +121,10 @@
                 <div class="carousel carousel--single">
                     <div class="carousel__track" data-carousel-track>
                         <div class="carousel__slide">
-                            <img src="{{ asset('storage/' . $imgs->first()->ruta) }}" alt="{{ $publicacion->titulo }}">
+                            <img src="{{ asset('storage/' . $imgs->first()->ruta) }}"
+                                 alt="{{ $publicacion->titulo }}"
+                                 data-lightbox-src="{{ asset('storage/' . $imgs->first()->ruta) }}"
+                                 title="Ver imagen completa">
                         </div>
                     </div>
                     @can('update', $publicacion)
@@ -111,7 +142,10 @@
                     <div class="carousel__track" data-carousel-track>
                         @foreach($imgs as $img)
                             <div class="carousel__slide">
-                                <img src="{{ asset('storage/' . $img->ruta) }}" alt="{{ $publicacion->titulo }}">
+                                <img src="{{ asset('storage/' . $img->ruta) }}"
+                                     alt="{{ $publicacion->titulo }}"
+                                     data-lightbox-src="{{ asset('storage/' . $img->ruta) }}"
+                                     title="Ver imagen completa">
                                 @can('update', $publicacion)
                                     <form method="POST"
                                           action="{{ route('publicaciones.imagenes.destroy', [$publicacion, $img]) }}"
@@ -252,6 +286,8 @@
 </div>
 @endsection
 
+{{-- Lightbox is injected at runtime by JS below — no pre-rendered HTML needed --}}
+
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -348,6 +384,136 @@ function toggleChildComposer(commentId) {
     el.classList.toggle('is-open');
     if (el.classList.contains('is-open')) el.querySelector('textarea').focus();
 }
+
+/* Lightbox — pure DOM injection, no pre-rendered HTML dependency */
+(function () {
+    var images  = Array.from(document.querySelectorAll('[data-lightbox-src]'));
+    if (!images.length) return;
+
+    var current = 0;
+    var overlay = null, lbImg = null, prevBtn = null, nextBtn = null, counter = null;
+
+    function mk(tag, css, attrs) {
+        var el = document.createElement(tag);
+        if (css)   el.style.cssText = css;
+        if (attrs) Object.keys(attrs).forEach(function(k){ el.setAttribute(k, attrs[k]); });
+        return el;
+    }
+
+    function buildOverlay() {
+        overlay = mk('div',
+            'position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;' +
+            'display:flex;align-items:center;justify-content:center;' +
+            'background:rgba(5,5,12,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);' +
+            'padding:1.5rem;box-sizing:border-box;',
+            {'role':'dialog','aria-modal':'true','aria-label':'Visor de imágenes'}
+        );
+
+        /* Backdrop click closes */
+        overlay.addEventListener('click', function(e){ if (e.target === overlay) close(); });
+
+        /* Close button */
+        var closeBtn = mk('button',
+            'position:absolute;top:1rem;right:1rem;z-index:2;' +
+            'width:2.25rem;height:2.25rem;border-radius:50%;border:none;cursor:pointer;' +
+            'background:rgba(255,255,255,0.12);color:#fff;display:flex;align-items:center;justify-content:center;' +
+            'backdrop-filter:blur(4px);transition:background .15s;',
+            {'aria-label':'Cerrar'}
+        );
+        closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        closeBtn.addEventListener('mouseover', function(){ this.style.background='rgba(255,255,255,0.22)'; });
+        closeBtn.addEventListener('mouseout',  function(){ this.style.background='rgba(255,255,255,0.12)'; });
+        closeBtn.addEventListener('click', close);
+
+        /* Image wrap */
+        var wrap = mk('div',
+            'position:relative;display:flex;align-items:center;justify-content:center;' +
+            'max-width:90vw;max-height:90vh;'
+        );
+
+        /* Prev button */
+        prevBtn = mk('button',
+            'position:absolute;left:-3rem;z-index:2;width:2.25rem;height:2.25rem;border-radius:50%;border:none;' +
+            'cursor:pointer;background:rgba(255,255,255,0.12);color:#fff;' +
+            'display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s;',
+            {'aria-label':'Imagen anterior'}
+        );
+        prevBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="15 18 9 12 15 6"/></svg>';
+        prevBtn.addEventListener('mouseover', function(){ this.style.background='rgba(255,255,255,0.22)'; });
+        prevBtn.addEventListener('mouseout',  function(){ this.style.background='rgba(255,255,255,0.12)'; });
+        prevBtn.addEventListener('click', function(e){ e.stopPropagation(); if(current>0){current--;update();} });
+
+        /* Image */
+        lbImg = mk('img',
+            'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;display:block;' +
+            'box-shadow:0 32px 64px rgba(0,0,0,0.6);'
+        );
+
+        /* Next button */
+        nextBtn = mk('button',
+            'position:absolute;right:-3rem;z-index:2;width:2.25rem;height:2.25rem;border-radius:50%;border:none;' +
+            'cursor:pointer;background:rgba(255,255,255,0.12);color:#fff;' +
+            'display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);transition:background .15s;',
+            {'aria-label':'Imagen siguiente'}
+        );
+        nextBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="9 18 15 12 9 6"/></svg>';
+        nextBtn.addEventListener('mouseover', function(){ this.style.background='rgba(255,255,255,0.22)'; });
+        nextBtn.addEventListener('mouseout',  function(){ this.style.background='rgba(255,255,255,0.12)'; });
+        nextBtn.addEventListener('click', function(e){ e.stopPropagation(); if(current<images.length-1){current++;update();} });
+
+        /* Counter */
+        counter = mk('div',
+            'position:absolute;bottom:-1.75rem;left:50%;transform:translateX(-50%);' +
+            'font-size:.75rem;color:rgba(255,255,255,0.6);letter-spacing:.05em;white-space:nowrap;'
+        );
+
+        wrap.appendChild(prevBtn);
+        wrap.appendChild(lbImg);
+        wrap.appendChild(nextBtn);
+        wrap.appendChild(counter);
+        overlay.appendChild(closeBtn);
+        overlay.appendChild(wrap);
+        document.body.appendChild(overlay);
+    }
+
+    function update() {
+        lbImg.src = images[current].dataset.lightboxSrc;
+        lbImg.alt = images[current].alt || '';
+        var multi = images.length > 1;
+        prevBtn.style.display = multi ? 'flex' : 'none';
+        nextBtn.style.display = multi ? 'flex' : 'none';
+        counter.textContent   = multi ? (current + 1) + ' / ' + images.length : '';
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current === images.length - 1;
+        prevBtn.style.opacity = current === 0               ? '0.35' : '1';
+        nextBtn.style.opacity = current === images.length-1 ? '0.35' : '1';
+    }
+
+    function open(index) {
+        current = index;
+        if (!overlay) buildOverlay();
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        update();
+    }
+
+    function close() {
+        if (overlay) overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    images.forEach(function (el, i) {
+        el.style.cursor = 'zoom-in';
+        el.addEventListener('click', function () { open(i); });
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (!overlay || overlay.style.display === 'none') return;
+        if (e.key === 'Escape')     close();
+        if (e.key === 'ArrowLeft'  && current > 0)                 { current--; update(); }
+        if (e.key === 'ArrowRight' && current < images.length - 1) { current++; update(); }
+    });
+}());
 
 /* Toggle nested child replies — independent per comment, recursive-safe */
 function toggleReplies(id, btn) {

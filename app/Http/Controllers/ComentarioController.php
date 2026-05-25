@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Comentario;
+use App\Models\Notificacion;
 use App\Models\Publicacion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,16 @@ class ComentarioController extends Controller
                 $ruta = $file->store('comentarios', 'public');
                 $comentario->imagenes()->create(['ruta' => $ruta, 'orden' => $orden]);
             }
+        }
+
+        // Notify: post owner if top-level reply; parent comment owner if nested
+        if ($comentario->parent_id) {
+            $parent = Comentario::find($comentario->parent_id);
+            if ($parent) {
+                Notificacion::crear($parent->user_id, Auth::id(), 'comentario', $publicacion->id);
+            }
+        } else {
+            Notificacion::crear($publicacion->user_id, Auth::id(), 'comentario', $publicacion->id);
         }
 
         return redirect()->route('publicaciones.show', $publicacion)

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ComentarioController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\TutorialController;
 use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\LikeController;
@@ -18,6 +20,9 @@ Route::middleware('auth')->group(function () {
 
     // Buscador
     Route::get('/buscar', [PublicacionController::class, 'buscar'])->name('buscar');
+
+    // Buscador de usuarios
+    Route::get('/u', [UsuarioController::class, 'buscar'])->name('usuarios.buscar');
 
     // Perfiles públicos (requieren auth)
     Route::get('/u/{user}', [UsuarioController::class, 'show'])->name('usuarios.show');
@@ -49,6 +54,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/zonas/{publicacion}/reposte', [ReposteController::class, 'toggle'])->name('repostes.toggle');
     Route::post('/zonas/{publicacion}/guardar', [FavoritoController::class, 'toggle'])->name('favoritos.toggle');
     Route::get('/guardados', [FavoritoController::class, 'index'])->name('guardados.index');
+
+    // Notificaciones
+    Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+    Route::post('/notificaciones/leer', [NotificacionController::class, 'markAllRead'])->name('notificaciones.read');
+
+    // Equipamiento y Guías — hub + UGC tutorials
+    Route::get('/guias', [TutorialController::class, 'index'])->name('guias.index');
+    Route::get('/guias/nuevo', [TutorialController::class, 'create'])->name('tutoriales.create');
+    Route::post('/guias/nuevo', [TutorialController::class, 'store'])->name('tutoriales.store');
+    Route::get('/guias/{tutorial}', [TutorialController::class, 'show'])->name('tutoriales.show');
+    Route::delete('/guias/{tutorial}', [TutorialController::class, 'destroy'])->name('tutoriales.destroy');
 });
 
 require __DIR__ . '/auth.php';

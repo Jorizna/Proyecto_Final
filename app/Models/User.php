@@ -40,14 +40,14 @@ class User extends Authenticatable
         return $this->hasMany(Publicacion::class);
     }
 
+    public function tutoriales(): HasMany
+    {
+        return $this->hasMany(Tutorial::class);
+    }
+
     public function comentarios(): HasMany
     {
         return $this->hasMany(Comentario::class)->latest();
-    }
-
-    public function valoraciones(): HasMany
-    {
-        return $this->hasMany(Valoracion::class);
     }
 
     public function favoritos(): HasMany

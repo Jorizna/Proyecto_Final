@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>FishSpot Aragón — Bienvenido</title>
+    <title>FishSpot — Bienvenido</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -164,9 +164,9 @@
             </svg>
             Comunidad de pescadores
         </div>
-        <h1 class="splash-brand__name">FishSpot<br><span>Aragón</span></h1>
+        <h1 class="splash-brand__name">FishSpot<br><span>España</span></h1>
         <p class="splash-brand__tagline">
-            Descubre, comparte y explora las mejores<br>zonas de pesca de Aragón con la comunidad.
+            Descubre, comparte y explora las mejores<br>zonas de pesca de España con la comunidad.
         </p>
         <div class="splash-brand__features">
             <div class="splash-feature">
@@ -183,7 +183,7 @@
             </div>
             <div class="splash-feature">
                 <span class="splash-feature__icon">✓</span>
-                Sigue a otros pescadores de Aragón
+                Sigue a otros pescadores de toda España
             </div>
         </div>
     </div>
@@ -233,9 +233,6 @@
                         <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
                         Recordarme
                     </label>
-                    @if(Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="link">¿Olvidaste tu contraseña?</a>
-                    @endif
                 </div>
                 <button type="submit" class="btn btn--primary btn--block">Entrar</button>
             </form>

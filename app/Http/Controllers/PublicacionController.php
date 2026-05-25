@@ -59,7 +59,10 @@ class PublicacionController extends Controller
             ->latest()
             ->get();
 
-        return view('publicaciones.buscar', compact('publicaciones', 'q', 'etiquetas'));
+        $temporadas = \App\Models\Publicacion::TEMPORADAS;
+        $licencias  = \App\Models\Publicacion::LICENCIAS;
+
+        return view('publicaciones.buscar', compact('publicaciones', 'q', 'etiquetas', 'temporadas', 'licencias'));
     }
 
     public function create(): View
@@ -76,6 +79,8 @@ class PublicacionController extends Controller
             'descripcion' => 'required|string|max:2000',
             'latitud'     => 'required|numeric|between:-90,90',
             'longitud'    => 'required|numeric|between:-180,180',
+            'temporada'   => 'nullable|in:invierno,primavera,verano,otono',
+            'licencia'    => 'nullable|in:interauton,auton_1,auton_5,coto,mar',
             'etiquetas'   => 'nullable|array',
             'etiquetas.*' => 'exists:etiquetas,id',
             'imagenes'    => 'nullable|array|max:8',
@@ -98,6 +103,8 @@ class PublicacionController extends Controller
             'descripcion' => $validated['descripcion'],
             'latitud'     => $validated['latitud'],
             'longitud'    => $validated['longitud'],
+            'temporada'   => $validated['temporada'] ?? null,
+            'licencia'    => $validated['licencia'] ?? null,
         ]);
 
         if (!empty($validated['etiquetas'])) {
@@ -177,6 +184,8 @@ class PublicacionController extends Controller
             'descripcion' => 'required|string|max:2000',
             'latitud'     => 'required|numeric|between:-90,90',
             'longitud'    => 'required|numeric|between:-180,180',
+            'temporada'   => 'nullable|in:invierno,primavera,verano,otono',
+            'licencia'    => 'nullable|in:interauton,auton_1,auton_5,coto,mar',
             'etiquetas'   => 'nullable|array',
             'etiquetas.*' => 'exists:etiquetas,id',
             'imagenes'    => 'nullable|array|max:8',
@@ -198,6 +207,8 @@ class PublicacionController extends Controller
             'descripcion' => $validated['descripcion'],
             'latitud'     => $validated['latitud'],
             'longitud'    => $validated['longitud'],
+            'temporada'   => $validated['temporada'] ?? null,
+            'licencia'    => $validated['licencia'] ?? null,
         ]);
 
         $publicacion->etiquetas()->sync($validated['etiquetas'] ?? []);

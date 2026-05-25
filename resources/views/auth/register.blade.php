@@ -7,7 +7,7 @@
 <div class="auth-page">
     <div class="auth-card">
         <h1 class="auth-card__title">Crear cuenta</h1>
-        <p class="auth-card__subtitle">Únete a la comunidad de pescadores de Aragón</p>
+        <p class="auth-card__subtitle">Únete a la comunidad de pescadores de España</p>
 
         <form method="POST" action="{{ route('register') }}" class="form">
             @csrf

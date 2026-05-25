@@ -63,26 +63,7 @@ Todos los servicios deben aparecer como `running`.
 
 | Servicio | URL |
 |---|---|
-| Aplicación | http://localho# Role: Expert Frontend & UI Designer
-# Task: Implement Compact Floating Map Filter Suite by Fish Type
-
-Please implement a lightweight, compact filtering system integrated directly into the top area of the Map component within the "Explorar" section.
-
----
-
-## 1. Minimalist Floating Layout (Top of the Map)
-* **The UI Layout:** Position the search and filter bar as a absolute-positioned floating element **inside the upper border of the map container** (e.g., `absolute top-4 left-4 z-[400]`), or right above it with minimal padding (`py-2`). It must be low-profile and take up very little vertical space.
-* **Compact Controls:** Design a single, cohesive horizontal bar containing:
-    - A small search input box.
-    - A clean filter icon button (e.g., a "Filtrar" gear or funnel icon).
-
-## 2. Dropdown Filter Menu Logic (Fish Type)
-* **The Interaction:** Clicking the filter button must toggle a small, floating dropdown menu directly beneath the bar (without pushing the map downwards).
-* **"Tipo de Pez" (Fish Type) Filter Selection:** - Inside this small dropdown grid, include a clean picker for **"Tipo de pez"** (e.g., Carpa, Trucha, Black Bass).
-* **Map Update Logic:**
-    - Selecting a fish type must instantly filter the active markers on the map using state management.
-    - **ONLY show zones on the map** that match the chosen species.
-    - If the filter is cleared, instantly restore all public fishing zone markers.st:8001 |
+| Aplicación | http://localhost:8001 |
 | phpMyAdmin | http://localhost:8081 |
 
 **Credenciales del usuario de prueba:**

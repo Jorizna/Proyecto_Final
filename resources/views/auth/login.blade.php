@@ -7,7 +7,7 @@
 <div class="auth-page">
     <div class="auth-card">
         <h1 class="auth-card__title">Iniciar sesión</h1>
-        <p class="auth-card__subtitle">Accede a FishSpot Aragón</p>
+        <p class="auth-card__subtitle">Accede a FishSpot</p>
 
         <form method="POST" action="{{ route('login') }}" class="form">
             @csrf
@@ -32,9 +32,6 @@
                     <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
                     Recordarme
                 </label>
-                @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" class="link">¿Olvidaste tu contraseña?</a>
-                @endif
             </div>
 
             <button type="submit" class="btn btn--primary btn--block">Entrar</button>

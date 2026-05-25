@@ -32,6 +32,46 @@
             @error('descripcion')<span class="form__error">{{ $message }}</span>@enderror
         </div>
 
+        <div class="form-row-2">
+            <div class="form__group">
+                <label class="form__label" for="temporada">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="13" height="13" style="vertical-align:-.1em;margin-right:.25rem;opacity:.6">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Temporada
+                </label>
+                <select id="temporada" name="temporada"
+                        class="form-control @error('temporada') form-control--error @enderror">
+                    <option value="">Sin especificar</option>
+                    <option value="invierno"  {{ old('temporada') === 'invierno'  ? 'selected' : '' }}>Invierno / Aguas Frías</option>
+                    <option value="primavera" {{ old('temporada') === 'primavera' ? 'selected' : '' }}>Primavera / Media Estación</option>
+                    <option value="verano"    {{ old('temporada') === 'verano'    ? 'selected' : '' }}>Verano / Alta Actividad</option>
+                    <option value="otono"     {{ old('temporada') === 'otono'     ? 'selected' : '' }}>Otoño / Depredadores</option>
+                </select>
+                @error('temporada')<span class="form__error">{{ $message }}</span>@enderror
+            </div>
+
+            <div class="form__group">
+                <label class="form__label" for="licencia">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="13" height="13" style="vertical-align:-.1em;margin-right:.25rem;opacity:.6">
+                        <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                        <line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>
+                    </svg>
+                    Licencia requerida
+                </label>
+                <select id="licencia" name="licencia"
+                        class="form-control @error('licencia') form-control--error @enderror">
+                    <option value="">Sin especificar</option>
+                    <option value="interauton" {{ old('licencia') === 'interauton' ? 'selected' : '' }}>Licencia Interautonómica</option>
+                    <option value="auton_1"    {{ old('licencia') === 'auton_1'    ? 'selected' : '' }}>Licencia Autonómica (1 Año)</option>
+                    <option value="auton_5"    {{ old('licencia') === 'auton_5'    ? 'selected' : '' }}>Licencia Autonómica (5 Años)</option>
+                    <option value="coto"       {{ old('licencia') === 'coto'       ? 'selected' : '' }}>Permiso de Coto Federado</option>
+                    <option value="mar"        {{ old('licencia') === 'mar'        ? 'selected' : '' }}>Licencia de Mar / Costa</option>
+                </select>
+                @error('licencia')<span class="form__error">{{ $message }}</span>@enderror
+            </div>
+        </div>
+
         <div class="form__group">
             <label class="form__label">Ubicación en el mapa *</label>
             <p class="form__hint">Haz clic en el mapa para seleccionar las coordenadas exactas</p>

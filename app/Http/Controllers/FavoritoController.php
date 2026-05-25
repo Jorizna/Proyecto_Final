@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Favorito;
+use App\Models\Notificacion;
 use App\Models\Publicacion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,7 @@ class FavoritoController extends Controller
                 'user_id'        => Auth::id(),
                 'publicacion_id' => $publicacion->id,
             ]);
+            Notificacion::crear($publicacion->user_id, Auth::id(), 'favorito', $publicacion->id);
             $mensaje = 'Zona añadida a favoritos.';
         }
 

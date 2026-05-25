@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="feed-header">
-    <p class="feed-header__eyebrow">Aragón · España</p>
+    <p class="feed-header__eyebrow">FishSpot · España</p>
     <h1 class="feed-header__title">Zonas de Pesca</h1>
     <p class="feed-header__sub">{{ $publicaciones->count() }} zonas publicadas por la comunidad</p>
 </div>
@@ -19,15 +19,6 @@
         @foreach($publicaciones as $pub)
             @php $primeraImagen = $pub->imagenes->first(); @endphp
             <article class="post-card">
-                @if($primeraImagen)
-                    <a href="{{ route('publicaciones.show', $pub) }}">
-                        <img src="{{ asset('storage/' . $primeraImagen->ruta) }}"
-                             alt="{{ $pub->titulo }}" class="post-card__img">
-                    </a>
-                @else
-                    <div class="post-card__img--placeholder">Sin imagen</div>
-                @endif
-
                 <div class="post-card__body">
                     <div class="post-card__header">
                         <a href="{{ route('usuarios.show', $pub->user) }}" class="post-card__author-link">
@@ -44,21 +35,29 @@
                         <span class="post-card__date">{{ $pub->created_at->diffForHumans() }}</span>
                     </div>
 
-                    <h3 class="post-card__title">
-                        <a href="{{ route('publicaciones.show', $pub) }}">{{ $pub->titulo }}</a>
-                    </h3>
-
-                    @if($pub->descripcion)
-                        <p class="post-card__desc">{{ $pub->descripcion }}</p>
-                    @endif
-
-                    @if($pub->etiquetas->isNotEmpty())
-                        <div class="post-card__tags tags">
-                            @foreach($pub->etiquetas->take(4) as $etiqueta)
-                                <span class="tag">{{ $etiqueta->nombre }}</span>
-                            @endforeach
+                    <div class="post-card__inner">
+                        <div class="post-card__text">
+                            <h3 class="post-card__title">
+                                <a href="{{ route('publicaciones.show', $pub) }}">{{ $pub->titulo }}</a>
+                            </h3>
+                            @if($pub->descripcion)
+                                <p class="post-card__desc">{{ $pub->descripcion }}</p>
+                            @endif
+                            @if($pub->etiquetas->isNotEmpty())
+                                <div class="post-card__tags tags">
+                                    @foreach($pub->etiquetas->take(3) as $etiqueta)
+                                        <span class="tag">{{ $etiqueta->nombre }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
-                    @endif
+                        @if($primeraImagen)
+                            <a href="{{ route('publicaciones.show', $pub) }}" class="post-card__thumb">
+                                <img src="{{ asset('storage/' . $primeraImagen->ruta) }}"
+                                     alt="{{ $pub->titulo }}" class="post-card__thumb-img">
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="post-card__footer">

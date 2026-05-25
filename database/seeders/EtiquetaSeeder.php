@@ -10,6 +10,7 @@ class EtiquetaSeeder extends Seeder
     public function run(): void
     {
         $especies = [
+            // Agua dulce — Aragón
             'Trucha común',
             'Trucha arco iris',
             'Carpa',
@@ -24,6 +25,15 @@ class EtiquetaSeeder extends Seeder
             'Bermejuela',
             'Madrilla',
             'Cachuelo',
+            // Especies marinas
+            'Lubina',
+            'Dorada',
+            'Dentón',
+            'Sargo',
+            'Corvallo',
+            'Lirio',
+            'Bacoreta',
+            'Jurel',
         ];
 
         foreach ($especies as $especie) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'FishSpot Aragón') — FishSpot Aragón</title>
+    <title>@yield('title', 'FishSpot') — FishSpot</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,7 +20,7 @@
 
 {{-- Mobile top bar --}}
 <div class="mobile-bar">
-    <a href="{{ route('publicaciones.index') }}" class="mobile-bar__logo">FishSpot Aragón</a>
+    <a href="{{ route('publicaciones.index') }}" class="mobile-bar__logo">FishSpot</a>
     <a href="{{ route('perfil.show') }}" class="mobile-bar__avatar">
         @if(auth()->user()->avatar)
             <img src="{{ asset('storage/' . auth()->user()->avatar) }}"
@@ -44,7 +44,7 @@
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                     <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
-                FishSpot Aragón
+                FishSpot
             </a>
 
             <nav class="sidebar-nav">
@@ -80,6 +80,33 @@
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                     </svg>
                     Guardados
+                </a>
+
+                @php
+                    $notifNoLeidas = \App\Models\Notificacion::where('user_id', auth()->id())->where('leida', false)->count();
+                @endphp
+                <a href="{{ route('notificaciones.index') }}"
+                   class="sidebar-nav__link {{ request()->routeIs('notificaciones.*') ? 'sidebar-nav__link--active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    Notificaciones
+                    @if($notifNoLeidas > 0)
+                        <span class="sidebar-notif-badge">{{ $notifNoLeidas > 99 ? '99+' : $notifNoLeidas }}</span>
+                    @endif
+                </a>
+
+                <a href="{{ route('guias.index') }}"
+                   class="sidebar-nav__link {{ request()->routeIs('guias.*') ? 'sidebar-nav__link--active' : '' }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        <line x1="10" y1="7" x2="16" y2="7"/>
+                        <line x1="10" y1="11" x2="16" y2="11"/>
+                        <line x1="10" y1="15" x2="14" y2="15"/>
+                    </svg>
+                    Equipos y Guías
                 </a>
 
                 <a href="{{ route('publicaciones.create') }}" class="sidebar-nav__link sidebar-nav__link--cta">
@@ -146,17 +173,18 @@
     <aside class="col-right">
         <div class="col-right__inner">
 
-            {{-- Search --}}
-            <form class="search-box" action="{{ route('buscar') }}" method="GET">
+            {{-- User Search --}}
+            <form class="search-box" action="{{ route('usuarios.buscar') }}" method="GET">
                 <div class="search-box__wrap">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="1.75" width="15" height="15">
-                        <circle cx="11" cy="11" r="8"/>
-                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
                     </svg>
                     <input type="search" name="q" class="search-input"
-                           placeholder="Buscar zonas..."
-                           value="{{ request('q') }}" autocomplete="off">
+                           placeholder="Buscar usuario..."
+                           value="{{ request()->routeIs('usuarios.buscar') ? request('q') : '' }}"
+                           autocomplete="off">
                 </div>
             </form>
 
@@ -200,8 +228,8 @@
 
             {{-- CTA --}}
             <div class="sidebar-tip">
-                <p class="sidebar-tip__title">FishSpot Aragón</p>
-                <p class="sidebar-tip__text">Comparte las mejores zonas de pesca de Aragón con la comunidad.</p>
+                <p class="sidebar-tip__title">FishSpot España</p>
+                <p class="sidebar-tip__text">Comparte las mejores zonas de pesca de España con la comunidad.</p>
                 <a href="{{ route('publicaciones.create') }}" class="btn btn--primary btn--block" style="margin-top:.75rem">
                     + Publicar zona
                 </a>
@@ -255,7 +283,7 @@
 
 <header class="header">
     <nav class="nav container">
-        <a href="{{ route('publicaciones.index') }}" class="nav__logo">FishSpot Aragón</a>
+        <a href="{{ route('publicaciones.index') }}" class="nav__logo">FishSpot</a>
         <ul class="nav__links">
             <li><a href="{{ route('login') }}" class="nav__link {{ request()->routeIs('login') ? 'nav__link--active' : '' }}">Iniciar sesión</a></li>
             <li><a href="{{ route('register') }}" class="nav__link nav__link--highlight">Registrarse</a></li>
@@ -286,6 +314,7 @@
 
 @endauth
 
+@stack('modals')
 <script>
 /* Global 3-dot dropdown handler */
 (function () {
