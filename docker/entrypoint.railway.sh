@@ -49,8 +49,8 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-echo "==> Generando configuración nginx en puerto ${PORT:-80}..."
-envsubst '${PORT}' < /etc/nginx/sites-available/default.template > /etc/nginx/sites-available/default
+echo "==> Copiando configuración nginx..."
+cp /etc/nginx/sites-available/default.template /etc/nginx/sites-available/default
 
 echo "==> Iniciando nginx + php-fpm vía supervisor..."
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

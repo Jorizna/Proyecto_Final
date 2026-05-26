@@ -4,7 +4,6 @@ FROM php:8.4-fpm
 RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
-    gettext-base \
     git \
     curl \
     libpng-dev \
@@ -73,6 +72,6 @@ RUN chown -R www-data:www-data /var/www \
 COPY docker/entrypoint.railway.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE ${PORT:-80}
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
