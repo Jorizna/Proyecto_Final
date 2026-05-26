@@ -1,0 +1,77 @@
+FROM php:8.4-fpm
+
+# Instalar nginx, supervisor y dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    nginx \
+    supervisor \
+    git \
+    curl \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar extensiones PHP
+RUN docker-php-ext-configure gd --with-jpeg --with-webp \
+    && docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip
+
+# Copiar configuración PHP
+COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
+
+# Instalar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www
+
+# Instalar dependencias PHP (mejor caché de capas)
+COPY composer.json composer.lock* /var/www/
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
+    --no-dev \
+    --no-scripts \
+    --no-autoloader \
+    --no-interaction \
+    --prefer-dist
+
+# Copiar código de la aplicación
+COPY . /var/www
+
+# Generar autoloader optimizado
+RUN COMPOSER_MEMORY_LIMIT=-1 composer dump-autoload \
+    --optimize \
+    --no-scripts \
+    --no-interaction
+
+# Configurar nginx
+COPY docker/nginx/railway.conf /etc/nginx/sites-available/default
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Configurar supervisor
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN mkdir -p /var/log/supervisor
+
+# Permisos
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage \
+    && chmod -R 755 /var/www/bootstrap/cache
+
+# Entrypoint de producción
+COPY docker/entrypoint.railway.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 80
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
