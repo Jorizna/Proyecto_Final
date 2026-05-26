@@ -4,6 +4,7 @@ FROM php:8.4-fpm
 RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
+    gettext-base \
     git \
     curl \
     libpng-dev \
@@ -54,8 +55,8 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer dump-autoload \
     --no-scripts \
     --no-interaction
 
-# Configurar nginx
-COPY docker/nginx/railway.conf /etc/nginx/sites-available/default
+# Configurar nginx (se copia como template; el puerto se sustituye en el entrypoint)
+COPY docker/nginx/railway.conf /etc/nginx/sites-available/default.template
 RUN rm -f /etc/nginx/sites-enabled/default \
     && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
@@ -72,6 +73,6 @@ RUN chown -R www-data:www-data /var/www \
 COPY docker/entrypoint.railway.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 80
+EXPOSE ${PORT:-80}
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
