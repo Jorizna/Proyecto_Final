@@ -14,6 +14,6 @@ class PublicacionPolicy
 
     public function delete(User $user, Publicacion $publicacion): bool
     {
-        return $user->id === $publicacion->user_id;
+        return $user->id === $publicacion->user_id || $user->esModerador();
     }
 }

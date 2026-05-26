@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notificacion;
+use App\Jobs\EnviarNotificacion;
 use App\Models\Tutorial;
 use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +42,7 @@ class TutorialController extends Controller
 
         // Notify followers that a new tutorial was published
         foreach ($request->user()->followers as $follower) {
-            Notificacion::crear($follower->id, $request->user()->id, 'tutorial', null, $tutorial->id);
+            EnviarNotificacion::dispatch($follower->id, $request->user()->id, 'tutorial', null, $tutorial->id);
         }
 
         return redirect()->route('guias.index')

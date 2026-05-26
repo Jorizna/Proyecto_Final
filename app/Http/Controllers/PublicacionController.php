@@ -11,6 +11,7 @@ use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -26,15 +27,16 @@ class PublicacionController extends Controller
         $followingIds = $user->following()->pluck('users.id')->toArray();
 
         if (!empty($followingIds)) {
-            // Tier-1 IDs: posts from followed users + posts liked/reposted by followed users
-            $tier1Ids = Publicacion::whereIn('user_id', $followingIds)->pluck('id')
-                ->merge(Like::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
-                ->merge(Reposte::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
-                ->unique()
-                ->values()
-                ->toArray();
+            $inList = Cache::tags('feed')->remember("feed.tier1.{$user->id}", 120, function () use ($followingIds) {
+                $tier1Ids = Publicacion::whereIn('user_id', $followingIds)->pluck('id')
+                    ->merge(Like::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
+                    ->merge(Reposte::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
+                    ->unique()
+                    ->values()
+                    ->toArray();
 
-            $inList = implode(',', $tier1Ids ?: [0]);
+                return implode(',', $tier1Ids ?: [0]);
+            });
 
             $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
                 ->where('user_id', '!=', $user->id)
@@ -128,6 +130,8 @@ class PublicacionController extends Controller
                 ]);
             }
         }
+
+        Cache::tags('feed')->flush();
 
         return redirect()->route('publicaciones.show', $publicacion)
             ->with('success', 'Zona de pesca publicada.');
@@ -244,6 +248,7 @@ class PublicacionController extends Controller
         }
 
         $publicacion->delete();
+        Cache::tags('feed')->flush();
 
         return redirect()->route('publicaciones.index')
             ->with('success', 'Zona de pesca eliminada.');

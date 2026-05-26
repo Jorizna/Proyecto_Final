@@ -35,8 +35,4 @@ return [
         ],
     ],
 
-    'aemet' => [
-        'key' => env('AEMET_API_KEY', ''),
-    ],
-
 ];

@@ -10,12 +10,15 @@ services:
     volumes:
       - .:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./docker/php/www.conf:/usr/local/etc/php-fpm.d/www.conf
       - ./docker/entrypoint.sh:/usr/local/bin/entrypoint.sh
     networks:
       - fishspot_network
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   # Servidor web Nginx
   nginx:
@@ -56,24 +59,35 @@ services:
       retries: 5
       start_period: 30s
 
-  # phpMyAdmin
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: fishspot_phpmyadmin
+  # Redis — caché, sesiones y colas
+  redis:
+    image: redis:7-alpine
+    container_name: fishspot_redis
     restart: unless-stopped
-    ports:
-      - "8081:80"
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      PMA_USER: ${DB_USERNAME:-fishspot_user}
-      PMA_PASSWORD: ${DB_PASSWORD:-fishspot_pass}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    networks:
+      - fishspot_network
+
+  # Queue worker — procesa notificaciones en segundo plano
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fishspot_queue
+    restart: unless-stopped
+    working_dir: /var/www
+    entrypoint: ["/usr/local/bin/queue-entrypoint.sh"]
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - ./docker/queue-entrypoint.sh:/usr/local/bin/queue-entrypoint.sh
     networks:
       - fishspot_network
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
 networks:
   fishspot_network:

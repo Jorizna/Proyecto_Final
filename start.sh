@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script de primer inicio para FishSpot Aragón
+# Script de primer inicio para FishSpot España
 
 set -e
 
 echo "================================================"
-echo "   FishSpot Aragón — Inicio del entorno Docker  "
+echo "   FishSpot España — Inicio del entorno Docker  "
 echo "================================================"
 echo ""
 
@@ -29,8 +29,9 @@ docker compose ps
 echo ""
 echo "================================================"
 echo "  Entorno listo:"
-echo "  Aplicación:  http://localhost:8000"
-echo "  phpMyAdmin:  http://localhost:8080"
-echo "                                               "
-echo "  Usuario demo: demo@fishspot.local / password  "
+echo "  Aplicación:  http://localhost:8001"
+echo ""
+echo "  Usuarios de prueba (contraseña: password)"
+echo "  Moderador:  mod@fishspot.local"
+echo "  Usuario:    carlos@fishspot.local"
 echo "================================================"
