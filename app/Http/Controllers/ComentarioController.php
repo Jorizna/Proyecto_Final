@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\EnviarNotificacion;
 use App\Models\Comentario;
+use App\Models\Notificacion;
 use App\Models\Publicacion;
 use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
@@ -49,14 +49,13 @@ class ComentarioController extends Controller
             }
         }
 
-        // Notify: post owner if top-level reply; parent comment owner if nestedvale me
         if ($comentario->parent_id) {
             $parent = Comentario::find($comentario->parent_id);
             if ($parent) {
-                EnviarNotificacion::dispatch($parent->user_id, Auth::id(), 'comentario', $publicacion->id);
+                Notificacion::crear($parent->user_id, Auth::id(), 'comentario', $publicacion->id);
             }
         } else {
-            EnviarNotificacion::dispatch($publicacion->user_id, Auth::id(), 'comentario', $publicacion->id);
+            Notificacion::crear($publicacion->user_id, Auth::id(), 'comentario', $publicacion->id);
         }
 
         return redirect()->route('publicaciones.show', $publicacion)

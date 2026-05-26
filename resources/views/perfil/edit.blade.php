@@ -12,10 +12,9 @@
         {{-- Banner --}}
         <div class="form__group">
             <label class="form__label">Imagen de portada</label>
-            @if($user->banner)
-                <img src="{{ asset('storage/' . $user->banner) }}" alt="Portada actual"
-                     style="width:100%;height:120px;object-fit:cover;border-radius:12px;margin-bottom:.5rem;display:block">
-            @endif
+            <img id="banner-preview" src="{{ $user->banner ? asset('storage/' . $user->banner) : '' }}"
+                 alt="Vista previa de portada"
+                 style="width:100%;height:120px;object-fit:cover;border-radius:12px;margin-bottom:.5rem;display:{{ $user->banner ? 'block' : 'none' }}">
             <label class="upload-btn" style="display:inline-flex">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="16" height="16">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -23,18 +22,21 @@
                     <polyline points="21 15 16 10 5 21"/>
                 </svg>
                 {{ $user->banner ? 'Cambiar portada' : 'Subir portada' }}
-                <input type="file" name="banner" accept="image/jpeg,image/png,image/webp">
+                <input type="file" id="banner-input" name="banner" accept="image/jpeg,image/png,image/webp">
             </label>
             @error('banner')<span class="form__error" style="display:block;margin-top:.35rem">{{ $message }}</span>@enderror
         </div>
 
         {{-- Avatar --}}
         <div class="form__group form__group--avatar">
-            @if($user->avatar)
-                <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar actual" class="avatar avatar--md">
-            @else
-                <div class="avatar avatar--md avatar--placeholder">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
-            @endif
+            <div id="avatar-current">
+                @if($user->avatar)
+                    <img id="avatar-preview" src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar actual" class="avatar avatar--md">
+                @else
+                    <div id="avatar-placeholder" class="avatar avatar--md avatar--placeholder">{{ strtoupper(substr($user->name, 0, 1)) }}</div>
+                    <img id="avatar-preview" src="" alt="Vista previa" class="avatar avatar--md" style="display:none">
+                @endif
+            </div>
             <div>
                 <label class="form__label" for="avatar">Cambiar foto de perfil</label>
                 <label class="upload-btn" style="display:inline-flex;margin-top:.35rem">
@@ -112,3 +114,32 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    function previewFile(input, previewId, placeholderId) {
+        input.addEventListener('change', function () {
+            var file = this.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var preview = document.getElementById(previewId);
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                if (placeholderId) {
+                    var ph = document.getElementById(placeholderId);
+                    if (ph) ph.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    var bannerInput  = document.getElementById('banner-input');
+    var avatarInput  = document.getElementById('avatar');
+    if (bannerInput) previewFile(bannerInput, 'banner-preview', null);
+    if (avatarInput) previewFile(avatarInput, 'avatar-preview', 'avatar-placeholder');
+}());
+</script>
+@endpush

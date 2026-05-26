@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\EnviarNotificacion;
+use App\Models\Notificacion;
 use App\Models\Publicacion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,7 @@ class LikeController extends Controller
             $like->delete();
         } else {
             $publicacion->likes()->create(['user_id' => Auth::id()]);
-            EnviarNotificacion::dispatch($publicacion->user_id, Auth::id(), 'like', $publicacion->id);
+            Notificacion::crear($publicacion->user_id, Auth::id(), 'like', $publicacion->id);
         }
 
         return back();
