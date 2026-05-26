@@ -18,7 +18,7 @@
     <div class="feed-cascade">
         @foreach($publicaciones as $pub)
             @php $primeraImagen = $pub->imagenes->first(); @endphp
-            <article class="post-card">
+            <article class="post-card" data-href="{{ route('publicaciones.show', $pub) }}">
                 <div class="post-card__body">
                     <div class="post-card__header">
                         <a href="{{ route('usuarios.show', $pub->user) }}" class="post-card__author-link">
@@ -84,3 +84,14 @@
     {{ $publicaciones->links('pagination.fishspot') }}
 @endif
 @endsection
+
+@push('scripts')
+<script>
+document.querySelectorAll('.post-card[data-href]').forEach(function (card) {
+    card.addEventListener('click', function (e) {
+        if (e.target.closest('a, button, form')) return;
+        window.location.href = card.dataset.href;
+    });
+});
+</script>
+@endpush
