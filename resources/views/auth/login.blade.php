@@ -15,7 +15,7 @@
             <div class="form__group">
                 <label class="form__label" for="email">Email</label>
                 <input type="email" id="email" name="email" class="form-control @error('email') form-control--error @enderror"
-                       value="{{ old('email') }}" required autofocus autocomplete="username">
+                       value="{{ $errors->has('email') ? old('email') : '' }}" required autofocus autocomplete="username">
                 @error('email')<span class="form__error">{{ $message }}</span>@enderror
             </div>
 
