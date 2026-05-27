@@ -41,7 +41,6 @@ class DatabaseSeeder extends Seeder
             'bio'      => 'Moderador oficial de la comunidad FishSpot España.',
             'rol'      => 'moderador',
         ]);
-
         // --- 19 usuarios normales ---
         $usuarios = [
             ['name' => 'Carlos Río',        'email' => 'carlos@fishspot.local',   'bio' => 'Pescador de trucha del Pirineo aragonés.'],

@@ -89,8 +89,4 @@ class Publicacion extends Model
         return $this->belongsToMany(Etiqueta::class, 'publicacion_etiqueta');
     }
 
-    public function imagenPrincipal(): ?Imagen
-    {
-        return $this->imagenes()->first();
-    }
 }

@@ -12,6 +12,9 @@ use App\Http\Controllers\ReposteController;
 use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
 
+// Política de privacidad y términos de uso (pública, sin auth)
+Route::view('/privacidad', 'legal.privacidad')->name('privacidad');
+
 // Inicio — mapa (gated: returns splash for guests)
 Route::get('/', [PublicacionController::class, 'index'])->name('publicaciones.index');
 

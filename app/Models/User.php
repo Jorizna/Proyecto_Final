@@ -80,12 +80,6 @@ class User extends Authenticatable
         return $this->belongsToMany(Publicacion::class, 'likes');
     }
 
-    // Publicaciones que ha reposteado
-    public function publicacionesReposteadas()
-    {
-        return $this->belongsToMany(Publicacion::class, 'repostes');
-    }
-
     // Usuarios que este usuario sigue
     public function following()
     {

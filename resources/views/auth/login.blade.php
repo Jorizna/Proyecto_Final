@@ -37,6 +37,12 @@
             <button type="submit" class="btn btn--primary btn--block">Entrar</button>
         </form>
 
+        <div class="auth-http-notice">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Entorno local (HTTP). Tu contraseña se almacena cifrada con Bcrypt.
+            <a href="{{ route('privacidad') }}" class="link">Política de privacidad</a>
+        </div>
+
         <p class="auth-card__footer">
             ¿No tienes cuenta? <a href="{{ route('register') }}" class="link">Regístrate</a>
         </p>
