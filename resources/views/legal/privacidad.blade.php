@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Política de Privacidad')
-@section('body-class', 'auth-bg')
+@section('body-class', 'legal-bg')
 
 @section('content')
 <div class="legal-page">
@@ -16,14 +16,15 @@
             <p class="legal-meta">FishSpot Aragón &middot; Última actualización: mayo 2025</p>
         </div>
 
+        <div class="legal-body">
+
         {{-- 1. RESPONSABLE --}}
         <section class="legal-section">
             <h2>1. Responsable del Tratamiento</h2>
             <table class="legal-table">
                 <tr><th>Denominación</th><td>FishSpot Aragón (proyecto académico)</td></tr>
                 <tr><th>Centro</th><td>CPIFP Los Enlaces, Zaragoza</td></tr>
-                <tr><th>Finalidad del proyecto</th><td>Proyecto final del Ciclo Formativo DAW — Entornos de Desarrollo 2024/25</td></tr>
-                <tr><th>Contacto</th><td>Al tratarse de un entorno de desarrollo local no existe dirección de contacto pública.</td></tr>
+                <tr><th>Finalidad del proyecto</th><td>Proyecto final del Ciclo Formativo DAW — Entornos de Desarrollo 2025/26</td></tr>
             </table>
             <p class="legal-note">
                 Al ser un proyecto académico de demostración, no es de aplicación la obligación de designar un Delegado de Protección de Datos (DPD) según el art. 37 RGPD. En un despliegue real, debería designarse uno si el tratamiento así lo requiriese.
@@ -146,8 +147,10 @@
             <p>Esta política puede actualizarse. Los cambios se notificarán mediante un aviso visible en la plataforma. El uso continuado del servicio tras los cambios implica la aceptación de la nueva política.</p>
         </section>
 
+        </div>{{-- /.legal-body --}}
+
         <div class="legal-footer">
-            <p>FishSpot Aragón &mdash; Proyecto académico CPIFP Los Enlaces &mdash; 2024/25</p>
+            <p>FishSpot Aragón &mdash; Proyecto académico CPIFP Los Enlaces &mdash; 2025/26</p>
             <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('login') }}"
                class="btn btn--secondary">Volver</a>
         </div>
