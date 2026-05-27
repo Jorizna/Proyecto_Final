@@ -53,12 +53,6 @@
             <button type="submit" class="btn btn--primary btn--block">Registrarse</button>
         </form>
 
-        <div class="auth-http-notice">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Entorno local (HTTP). Las contraseñas se guardan como hash Bcrypt — nunca en texto plano.
-            <a href="{{ route('privacidad') }}" class="link">Más información</a>
-        </div>
-
         <p class="auth-card__footer">
             ¿Ya tienes cuenta? <a href="{{ route('login') }}" class="link">Inicia sesión</a>
         </p>
