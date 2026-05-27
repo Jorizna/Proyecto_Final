@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', $q ? 'Buscar: ' . $q : 'Explorar')
 
@@ -199,12 +199,9 @@
 
 @section('content')
 <div id="explore-mapa"></div>
-
-{{-- ── Floating filter bar ── --}}
 <div class="map-filterbar-wrap" id="map-filterbar-wrap">
 
     <div class="map-filterbar">
-        {{-- Search --}}
         <form class="map-filterbar__search" action="{{ route('buscar') }}" method="GET">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                  width="13" height="13" aria-hidden="true">
@@ -216,8 +213,6 @@
         </form>
 
         <div class="map-filterbar__sep"></div>
-
-        {{-- Filter toggle --}}
         <button class="map-filterbar__btn" id="map-filter-toggle"
                 aria-expanded="false" aria-controls="map-filter-panel" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"
@@ -231,8 +226,6 @@
             </svg>
         </button>
     </div>
-
-    {{-- Active filter badge (shown when a species is selected) --}}
     <div class="map-filter-active-badge" id="map-filter-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
              width="11" height="11" aria-hidden="true">
@@ -242,11 +235,7 @@
         <button class="map-filter-active-badge__clear" id="filter-clear-btn"
                 type="button" title="Quitar filtro">✕</button>
     </div>
-
-    {{-- ── Multi-filter panel ── --}}
     <div class="map-filter-panel" id="map-filter-panel" role="region" aria-label="Filtros">
-
-        {{-- 1. Pez / Especie --}}
         <div class="map-filter-section">
             <div class="map-filter-panel__head">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="vertical-align:-.05em;margin-right:.25rem">
@@ -264,8 +253,6 @@
                 @endforeach
             </div>
         </div>
-
-        {{-- 2. Temporada --}}
         <div class="map-filter-section">
             <div class="map-filter-panel__head">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="vertical-align:-.05em;margin-right:.25rem">
@@ -282,8 +269,6 @@
                 @endforeach
             </div>
         </div>
-
-        {{-- 3. Licencia --}}
         <div class="map-filter-section">
             <div class="map-filter-panel__head">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11" style="vertical-align:-.05em;margin-right:.25rem">
@@ -301,8 +286,6 @@
                 @endforeach
             </div>
         </div>
-
-        {{-- Reset all --}}
         <div style="margin-top:.625rem;padding-top:.625rem;border-top:1px solid rgba(0,0,0,0.06)">
             <button id="filter-reset-all" type="button"
                     style="width:100%;padding:.3rem;border:none;background:transparent;color:#9CA3AF;font-size:.74rem;font-weight:600;font-family:inherit;cursor:pointer;border-radius:6px;transition:background .13s,color .13s"

@@ -1,12 +1,10 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', $tutorial->titulo)
 
 @section('content')
 <div class="post-wrapper" style="max-width:680px">
     <article class="post">
-
-        {{-- Header image --}}
         @if($tutorial->imagen_cabecera)
             <div style="overflow:hidden;border-radius:var(--r-xl) var(--r-xl) 0 0">
                 <img src="{{ asset('storage/' . $tutorial->imagen_cabecera) }}"

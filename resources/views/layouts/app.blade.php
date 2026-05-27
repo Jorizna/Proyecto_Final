@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -16,11 +16,6 @@
 <body class="@yield('body-class', 'app')">
 
 @auth
-{{-- ════════════════════════════════════════════
-     3-COLUMN AUTHENTICATED LAYOUT
-     ════════════════════════════════════════════ --}}
-
-{{-- Mobile top bar --}}
 <div class="mobile-bar">
     <a href="{{ route('publicaciones.index') }}" class="mobile-bar__logo">FishSpot</a>
     <a href="{{ route('perfil.show') }}" class="mobile-bar__avatar">
@@ -36,8 +31,6 @@
 </div>
 
 <div class="app-shell">
-
-    {{-- ── Left Sidebar ── --}}
     <aside class="col-left">
         <div class="col-left__inner">
 
@@ -158,8 +151,6 @@
 
         </div>
     </aside>
-
-    {{-- ── Center Column ── --}}
     <main class="col-center">
         @if(session('success'))
             <div class="alert alert--success">{{ session('success') }}</div>
@@ -179,12 +170,8 @@
 
         @yield('content')
     </main>
-
-    {{-- ── Right Sidebar ── --}}
     <aside class="col-right">
         <div class="col-right__inner">
-
-            {{-- User Search --}}
             <form class="search-box" action="{{ route('usuarios.buscar') }}" method="GET">
                 <div class="search-box__wrap">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none"
@@ -198,8 +185,6 @@
                            autocomplete="off">
                 </div>
             </form>
-
-            {{-- Recent zones widget ── moved from homepage ── --}}
             @php
                 $sidebarRecientes = \App\Models\Publicacion::with(['imagenes','user','likes'])
                     ->latest()->take(6)->get();
@@ -236,8 +221,6 @@
                     @endforeach
                 </div>
             @endif
-
-            {{-- CTA --}}
             <div class="sidebar-tip">
                 <p class="sidebar-tip__title">FishSpot España</p>
                 <p class="sidebar-tip__text">Comparte las mejores zonas de pesca de España con la comunidad.</p>
@@ -250,8 +233,6 @@
     </aside>
 
 </div>
-
-{{-- Mobile bottom nav --}}
 <nav class="mobile-nav">
     <a href="{{ route('publicaciones.index') }}"
        class="mobile-nav__item {{ request()->routeIs('publicaciones.index') ? 'mobile-nav__item--active' : '' }}">
@@ -288,9 +269,6 @@
 </nav>
 
 @else
-{{-- ════════════════════════════════════════════
-     GUEST LAYOUT (login / register pages)
-     ════════════════════════════════════════════ --}}
 
 <header class="header">
     <nav class="nav container">

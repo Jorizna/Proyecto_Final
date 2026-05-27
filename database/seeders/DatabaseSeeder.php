@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
         ]);
         // --- 19 usuarios normales ---
         $usuarios = [
-            ['name' => 'Carlos Río',        'email' => 'carlos@fishspot.local',   'bio' => 'Pescador de trucha del Pirineo aragonés.'],
+            ['name' => 'Carlos Río',        'email' => '2',   'bio' => 'Pescador de trucha del Pirineo aragonés.'],
             ['name' => 'María Peñas',       'email' => 'maria@fishspot.local',    'bio' => 'Aficionada al spinning en embalses.'],
             ['name' => 'Javier Lomas',      'email' => 'javier@fishspot.local',   'bio' => 'Carpista de competición. Ebro es mi casa.'],
             ['name' => 'Ana Corrientes',    'email' => 'ana@fishspot.local',       'bio' => 'Pesca en aguas bravas y montaña.'],

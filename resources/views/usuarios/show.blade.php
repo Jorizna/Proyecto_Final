@@ -1,14 +1,10 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', $user->name)
 
 @section('content')
 <div class="profile-wrapper">
-
-    {{-- ── Hero: Banner + Info Card ── --}}
     <div class="profile-hero">
-
-        {{-- Banner --}}
         <div class="profile-banner">
             @if($user->banner)
                 <img src="{{ asset('storage/' . $user->banner) }}" alt="" class="profile-banner__img">
@@ -25,10 +21,7 @@
                 </a>
             @endif
         </div>
-
-        {{-- Info card (attached below banner) --}}
         <div class="profile-info-card">
-            {{-- Avatar overlaps banner bottom --}}
             <div class="profile-info-card__avatar-wrap">
                 @if($user->avatar)
                     <img src="{{ asset('storage/' . $user->avatar) }}"
@@ -39,8 +32,6 @@
                     </div>
                 @endif
             </div>
-
-            {{-- Action button (top-right) --}}
             <div class="profile-info-card__action">
                 @if($isOwnProfile)
                     <a href="{{ route('perfil.edit') }}" class="btn btn--secondary btn--sm">Editar perfil</a>
@@ -56,8 +47,6 @@
                     <a href="{{ route('login') }}" class="btn btn--primary btn--sm">Seguir</a>
                 @endif
             </div>
-
-            {{-- Name, bio, since --}}
             <div class="profile-info-card__text">
                 <h1 class="profile-top__name">{{ $user->name }}</h1>
                 @if($user->bio)
@@ -73,8 +62,6 @@
                     Miembro desde {{ $user->created_at->translatedFormat('F Y') }}
                 </p>
             </div>
-
-            {{-- Stats --}}
             <div class="profile-stats">
                 <div class="stat-card">
                     <span class="stat-card__value">{{ $seguidos }}</span>
@@ -91,15 +78,11 @@
             </div>
         </div>
     </div>
-
-    {{-- ── Tabs ── --}}
     <div class="profile-nav" role="tablist">
         <button class="profile-tab profile-tab--active" data-tab="posts" role="tab">Publicaciones</button>
         <button class="profile-tab" data-tab="replies" role="tab">Respuestas</button>
         <button class="profile-tab" data-tab="likes" role="tab">Me gusta</button>
     </div>
-
-    {{-- ── Tab: Publicaciones + Repostes ── --}}
     <div id="tab-posts" class="profile-pane profile-pane--active" role="tabpanel">
         @forelse($feed as $entry)
             @php $pub = $entry['item']; $primeraImg = $pub->imagenes->first(); @endphp
@@ -210,8 +193,6 @@
             </div>
         @endforelse
     </div>
-
-    {{-- ── Tab: Respuestas ── --}}
     <div id="tab-replies" class="profile-pane" role="tabpanel">
         @forelse($user->comentarios as $comentario)
             @if($comentario->publicacion)
@@ -232,8 +213,6 @@
             <div class="profile-empty"><p>Sin respuestas todavía.</p></div>
         @endforelse
     </div>
-
-    {{-- ── Tab: Me gusta ── --}}
     <div id="tab-likes" class="profile-pane" role="tabpanel">
         @forelse($user->publicacionesLiked as $pub)
             @php $img = $pub->imagenes->first(); @endphp

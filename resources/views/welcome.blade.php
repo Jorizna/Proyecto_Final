@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -157,8 +157,6 @@
 </head>
 <body>
 <div class="splash-wrap">
-
-    {{-- Branding --}}
     <div class="splash-brand">
         <div class="splash-brand__eyebrow">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="10" height="10">
@@ -189,8 +187,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Auth Card --}}
     <div class="splash-card">
         @php $activePane = old('_form', 'login'); @endphp
 
@@ -212,8 +208,6 @@
             <button class="splash-tab {{ $activePane === 'register' ? 'splash-tab--active' : '' }}"
                     data-target="register">Registrarse</button>
         </div>
-
-        {{-- Login Pane --}}
         <div id="pane-login" class="splash-pane {{ $activePane === 'login' ? 'splash-pane--active' : '' }}">
             <form method="POST" action="{{ route('login') }}" class="form">
                 @csrf
@@ -239,8 +233,6 @@
                 <button type="submit" class="btn btn--primary btn--block">Entrar</button>
             </form>
         </div>
-
-        {{-- Register Pane --}}
         <div id="pane-register" class="splash-pane {{ $activePane === 'register' ? 'splash-pane--active' : '' }}">
             <form method="POST" action="{{ route('register') }}" class="form">
                 @csrf

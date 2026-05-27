@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Notificaciones')
 
@@ -30,15 +30,11 @@
         <div class="notif-feed">
             @foreach($notificaciones as $notif)
                 <a href="{{ $notif->enlace() }}" class="notif-item{{ !$notif->leida ? ' notif-item--unread' : '' }}">
-
-                    {{-- Unread dot --}}
                     <div class="notif-item__dot-wrap">
                         @if(!$notif->leida)
                             <span class="notif-item__dot"></span>
                         @endif
                     </div>
-
-                    {{-- Actor avatar + type icon badge --}}
                     <div class="notif-item__avatar-col">
                         <div class="notif-item__avatar-wrap">
                             @if($notif->actor && $notif->actor->avatar)
@@ -82,8 +78,6 @@
                             </div>
                         </div>
                     </div>
-
-                    {{-- Text content --}}
                     <div class="notif-item__body">
                         <p class="notif-item__text">{!! $notif->textoHtml() !!}</p>
                         <span class="notif-item__time">

@@ -1,11 +1,9 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Equipamiento y Guías')
 
 @section('content')
 <div class="hub-wrapper">
-
-    {{-- ── PAGE HEADER ── --}}
     <div class="hub-header">
         <div class="hub-header__left">
             <div class="feed-header__eyebrow">
@@ -25,11 +23,6 @@
             Añadir tutorial
         </a>
     </div>
-
-    {{-- ════════════════════════════════
-         SECCIÓN 1 — TÉCNICAS MAESTRAS
-         Grid de 3 tarjetas compactas
-         ════════════════════════════════ --}}
     <section class="hub-section">
         <div class="hub-section__head hub-section__head--blue">
             <div class="hub-section__eyebrow">
@@ -43,8 +36,6 @@
         </div>
 
         <div class="hub-tech-grid">
-
-            {{-- CARD: Spinning con Señuelo --}}
             <div class="hub-tech-card" id="tech-spinning">
                 <div class="hub-tech-card__top hub-tech-card__top--brand">
                     <div class="hub-tech-card__icon">
@@ -99,8 +90,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- CARD: Surfcasting --}}
             <div class="hub-tech-card" id="tech-surf">
                 <div class="hub-tech-card__top hub-tech-card__top--purple">
                     <div class="hub-tech-card__icon">
@@ -145,8 +134,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- CARD: Carpfishing --}}
             <div class="hub-tech-card" id="tech-carp">
                 <div class="hub-tech-card__top hub-tech-card__top--green">
                     <div class="hub-tech-card__icon">
@@ -203,13 +190,8 @@
                 </div>
             </div>
 
-        </div>{{-- .hub-tech-grid --}}
+        </div>
     </section>
-
-    {{-- ════════════════════════════════
-         SECCIÓN 2 — EQUIPAMIENTO
-         Listado desplegable detallado
-         ════════════════════════════════ --}}
     <section class="hub-section">
         <div class="hub-section__head hub-section__head--amber">
             <div class="hub-section__eyebrow hub-section__eyebrow--amber">
@@ -362,13 +344,8 @@
                 </div>
             </div>
 
-        </div>{{-- .guias-grid --}}
+        </div>
     </section>
-
-    {{-- ════════════════════════════════
-         SECCIÓN 3 — POR ENTORNO
-         Tarjetas grandes con gradiente
-         ════════════════════════════════ --}}
     <section class="hub-section">
         <div class="hub-section__head hub-section__head--green">
             <div class="hub-section__eyebrow hub-section__eyebrow--green">
@@ -383,8 +360,6 @@
         </div>
 
         <div class="hub-env-grid">
-
-            {{-- RÍO --}}
             <div class="hub-env-card hub-env-card--river" id="env-rio">
                 <div class="hub-env-card__gradient"></div>
                 <div class="hub-env-card__content">
@@ -431,8 +406,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- LAGO --}}
             <div class="hub-env-card hub-env-card--lake" id="env-lago">
                 <div class="hub-env-card__gradient"></div>
                 <div class="hub-env-card__content">
@@ -477,8 +450,6 @@
                     </div>
                 </div>
             </div>
-
-            {{-- MAR (tarjeta ancha) --}}
             <div class="hub-env-card hub-env-card--sea hub-env-card--wide" id="env-mar">
                 <div class="hub-env-card__gradient"></div>
                 <div class="hub-env-card__content hub-env-card__content--split">
@@ -539,13 +510,8 @@
                 </div>
             </div>
 
-        </div>{{-- .hub-env-grid --}}
+        </div>
     </section>
-
-    {{-- ════════════════════════════════
-         SECCIÓN 4 — COMUNIDAD UGC
-         Feed dinámico de tutoriales
-         ════════════════════════════════ --}}
     <section class="hub-section">
         <div class="hub-section__head hub-section__head--community">
             <div class="hub-section__head-row">
@@ -662,7 +628,7 @@
         @endif
     </section>
 
-</div>{{-- .hub-wrapper --}}
+</div>
 
 <script>
 function toggleTech(id) {

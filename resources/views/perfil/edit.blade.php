@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Editar perfil')
 
@@ -8,8 +8,6 @@
 
     <form method="POST" action="{{ route('perfil.update') }}" enctype="multipart/form-data" class="form">
         @csrf @method('PUT')
-
-        {{-- Banner --}}
         <div class="form__group">
             <label class="form__label">Imagen de portada</label>
             <img id="banner-preview" src="{{ $user->banner ? asset('storage/' . $user->banner) : '' }}"
@@ -26,8 +24,6 @@
             </label>
             @error('banner')<span class="form__error" style="display:block;margin-top:.35rem">{{ $message }}</span>@enderror
         </div>
-
-        {{-- Avatar --}}
         <div class="form__group form__group--avatar">
             <div id="avatar-current">
                 @if($user->avatar)

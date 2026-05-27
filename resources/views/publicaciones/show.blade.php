@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', $publicacion->titulo)
 
@@ -9,8 +9,6 @@
 @section('content')
 <div class="post-wrapper">
     <article class="post">
-
-        {{-- ── 1. POST HEADER ── --}}
         <header class="post__header">
             <a href="{{ route('usuarios.show', $publicacion->user) }}" class="post__avatar-link">
                 @if($publicacion->user->avatar)
@@ -74,12 +72,8 @@
                 </div>
             @endcanany
         </header>
-
-        {{-- ── 2. TITLE & DESCRIPTION ── --}}
         <div class="post__body">
             <h1 class="post__titulo">{{ $publicacion->titulo }}</h1>
-
-            {{-- Metadata strip: temporada + licencia --}}
             @if($publicacion->temporada || $publicacion->licencia)
                 <div class="post-meta-strip">
                     @if($publicacion->temporada)
@@ -110,15 +104,11 @@
                 <p class="post__descripcion">{{ $publicacion->descripcion }}</p>
             @endif
         </div>
-
-        {{-- ── 3. MAP WIDGET ── --}}
         @if($publicacion->latitud && $publicacion->longitud)
             <div class="post-map-widget">
                 <div id="post-mini-map"></div>
             </div>
         @endif
-
-        {{-- ── 4. IMAGE CAROUSEL ── --}}
         @if($publicacion->imagenes->isNotEmpty())
             @php $imgs = $publicacion->imagenes; $n = $imgs->count(); @endphp
             @if($n === 1)
@@ -181,8 +171,6 @@
                 </div>
             @endif
         @endif
-
-        {{-- ── 5. INTERACTIONS ── --}}
         <div class="interactions">
             <form method="POST" action="{{ route('likes.toggle', $publicacion) }}">
                 @csrf
@@ -228,8 +216,6 @@
                 </button>
             </form>
         </div>
-
-        {{-- ── 6. REPLIES ── --}}
         <div class="replies" id="respuestas">
             <div class="replies__header">Respuestas</div>
 
@@ -273,8 +259,6 @@
                     <a href="{{ route('login') }}">Inicia sesión</a> para responder.
                 </p>
             @endauth
-
-            {{-- ── Reply list — nested boxed layout ── --}}
             @forelse($publicacion->comentarios as $comentario)
                 @include('publicaciones._reply', [
                     'comment'     => $comentario,
@@ -289,8 +273,6 @@
     </article>
 </div>
 @endsection
-
-{{-- Lightbox is injected at runtime by JS below — no pre-rendered HTML needed --}}
 
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

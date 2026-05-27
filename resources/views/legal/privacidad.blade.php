@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Política de Privacidad')
 @section('body-class', 'legal-bg')
@@ -17,8 +17,6 @@
         </div>
 
         <div class="legal-body">
-
-        {{-- 1. RESPONSABLE --}}
         <section class="legal-section">
             <h2>1. Responsable del Tratamiento</h2>
             <table class="legal-table">
@@ -30,8 +28,6 @@
                 Al ser un proyecto académico de demostración, no es de aplicación la obligación de designar un Delegado de Protección de Datos (DPD) según el art. 37 RGPD. En un despliegue real, debería designarse uno si el tratamiento así lo requiriese.
             </p>
         </section>
-
-        {{-- 2. DATOS RECOGIDOS --}}
         <section class="legal-section">
             <h2>2. Datos Personales que se Recogen</h2>
             <p>Al registrarte y utilizar FishSpot Aragón, se tratan los siguientes datos:</p>
@@ -50,8 +46,6 @@
                 </tbody>
             </table>
         </section>
-
-        {{-- 3. FINALIDAD --}}
         <section class="legal-section">
             <h2>3. Finalidad del Tratamiento</h2>
             <ul class="legal-list">
@@ -62,8 +56,6 @@
                 <li><strong>Moderación de contenido:</strong> garantizar el cumplimiento de los términos de uso.</li>
             </ul>
         </section>
-
-        {{-- 4. BASE LEGAL --}}
         <section class="legal-section">
             <h2>4. Base Legal del Tratamiento</h2>
             <table class="legal-table">
@@ -75,14 +67,10 @@
                 </tbody>
             </table>
         </section>
-
-        {{-- 5. CONSERVACIÓN --}}
         <section class="legal-section">
             <h2>5. Plazo de Conservación</h2>
             <p>Los datos se conservarán <strong>mientras la cuenta permanezca activa</strong>. Al solicitar la eliminación de la cuenta, se borrarán todos los datos personales asociados, salvo aquellos que deban conservarse por obligaciones legales. En este entorno académico, los datos solo persisten en la base de datos local del contenedor Docker y desaparecen al destruir el contenedor.</p>
         </section>
-
-        {{-- 6. DERECHOS --}}
         <section class="legal-section">
             <h2>6. Tus Derechos (RGPD / LOPDGDD)</h2>
             <p>Como usuario tienes los siguientes derechos sobre tus datos personales:</p>
@@ -96,8 +84,6 @@
             </ul>
             <p>Puedes ejercer estos derechos contactando con el responsable del tratamiento. También tienes derecho a presentar una reclamación ante la <strong>Agencia Española de Protección de Datos (AEPD)</strong> en <a href="https://www.aepd.es" target="_blank" rel="noopener" class="link">www.aepd.es</a>.</p>
         </section>
-
-        {{-- 7. COOKIES --}}
         <section class="legal-section">
             <h2>7. Política de Cookies</h2>
             <p>FishSpot Aragón utiliza <strong>únicamente cookies técnicas de sesión</strong>, necesarias para el funcionamiento del servicio:</p>
@@ -110,8 +96,6 @@
             </table>
             <p class="legal-note">No se utilizan cookies de seguimiento, publicidad, analíticas de terceros ni redes sociales externas.</p>
         </section>
-
-        {{-- 8. SEGURIDAD --}}
         <section class="legal-section">
             <h2>8. Medidas de Seguridad</h2>
             <ul class="legal-list">
@@ -122,8 +106,6 @@
                 <li><strong>Imágenes:</strong> se valida el tipo MIME y el tamaño antes de almacenarlas.</li>
             </ul>
         </section>
-
-        {{-- 9. TÉRMINOS DE USO --}}
         <section class="legal-section">
             <h2>9. Términos de Uso</h2>
             <h3>9.1 Uso aceptable</h3>
@@ -140,14 +122,12 @@
             <h3>9.4 Menores de edad</h3>
             <p>Este servicio no está dirigido a menores de <strong>14 años</strong>. Al registrarte, declaras tener al menos 14 años o contar con el consentimiento de tu tutor legal, conforme al art. 8 RGPD y la LOPDGDD.</p>
         </section>
-
-        {{-- 10. CAMBIOS --}}
         <section class="legal-section">
             <h2>10. Cambios en esta Política</h2>
             <p>Esta política puede actualizarse. Los cambios se notificarán mediante un aviso visible en la plataforma. El uso continuado del servicio tras los cambios implica la aceptación de la nueva política.</p>
         </section>
 
-        </div>{{-- /.legal-body --}}
+        </div>
 
         <div class="legal-footer">
             <p>FishSpot Aragón &mdash; Proyecto académico CPIFP Los Enlaces &mdash; 2025/26</p>

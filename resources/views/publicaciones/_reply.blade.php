@@ -1,6 +1,4 @@
-@php $depth = $depth ?? 0; @endphp
-
-{{-- reply-block groups the card + its thread as flat siblings (prevents width collapse) --}}
+﻿@php $depth = $depth ?? 0; @endphp
 <div class="reply-block">
 
     <div class="reply-item {{ $depth > 0 ? 'reply-item--nested' : '' }}"
@@ -99,10 +97,8 @@
                 </div>
             @endauth
 
-        </div>{{-- /.reply-item__body — NO nested thread inside here --}}
-    </div>{{-- /.reply-item --}}
-
-    {{-- Thread lives OUTSIDE the card as a sibling → zero avatar/padding stacking --}}
+        </div>
+    </div>
     @if($comment->children->isNotEmpty())
         <div class="reply-thread" id="replies-{{ $comment->id }}">
             @foreach($comment->children as $child)
@@ -115,4 +111,4 @@
         </div>
     @endif
 
-</div>{{-- /.reply-block --}}
+</div>
