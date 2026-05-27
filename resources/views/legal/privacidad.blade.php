@@ -16,17 +16,6 @@
             <p class="legal-meta">FishSpot Aragón &middot; Última actualización: mayo 2025</p>
         </div>
 
-        {{-- ── AVISO HTTP ── --}}
-        <div class="http-notice">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>
-                <strong>Aviso de entorno:</strong> Esta instalación local utiliza HTTP. El navegador puede mostrar una advertencia
-                de "sitio no seguro" en campos de contraseña porque HTTP no cifra la comunicación.
-                En un despliegue en producción sería obligatorio el uso de <strong>HTTPS (TLS/SSL)</strong>, eliminando completamente este aviso.
-                Tus contraseñas <strong>nunca se almacenan en texto plano</strong>; se guardan cifradas con Bcrypt (12 rondas).
-            </span>
-        </div>
-
         {{-- 1. RESPONSABLE --}}
         <section class="legal-section">
             <h2>1. Responsable del Tratamiento</h2>
@@ -130,7 +119,6 @@
                 <li><strong>Autorización:</strong> cada acción de edición/borrado verifica que el usuario es el propietario del recurso (Laravel Policies).</li>
                 <li><strong>Validación:</strong> todas las entradas de usuario se validan y sanean antes de procesarse.</li>
                 <li><strong>Imágenes:</strong> se valida el tipo MIME y el tamaño antes de almacenarlas.</li>
-                <li><strong>HTTPS:</strong> en producción, la comunicación debe cifrarse con TLS/SSL. En este entorno local de desarrollo se usa HTTP, lo que puede generar una advertencia del navegador en campos de contraseña. Esto es esperado y no significa que las contraseñas se almacenen en texto plano.</li>
             </ul>
         </section>
 
