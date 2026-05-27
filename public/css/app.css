@@ -404,12 +404,7 @@ textarea.form-control { resize: vertical; min-height: 80px; }
     gap: 1rem;
 }
 
-/* ── 16. Bento Cards Grid (Index) ── */
-.cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-    gap: 1.125rem;
-}
+/* ── 16. Cards ── */
 .card {
     background: var(--c-surface);
     border: var(--border);
