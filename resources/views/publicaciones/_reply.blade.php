@@ -24,7 +24,7 @@
                 @if(auth()->id() === $comment->user_id)
                     <form method="POST"
                           action="{{ route('comentarios.destroy', [$publicacion, $comment]) }}"
-                          style="margin-left:auto">
+                          class="reply-delete-form">
                         @csrf @method('DELETE')
                         <button type="button" class="btn-icon btn-icon--danger" title="Eliminar"
                                 onclick="this.closest('form').submit()">✕</button>
