@@ -958,7 +958,7 @@ body.app {
 /* ── 28. 3-Column App Shell — full-height flush sidebars ── */
 .app-shell {
     display: grid;
-    grid-template-columns: 260px 1fr 300px;
+    grid-template-columns: 240px 1fr 380px;
     grid-template-areas: "col-left col-center col-right";
     min-height: 100vh;
     align-items: start;
@@ -1292,9 +1292,21 @@ body.app {
 .col-left__inner { transition: padding 0.2s ease; }
 .sidebar-nav__link { transition: background 0.18s ease, color 0.18s ease, padding 0.2s ease; }
 
-/* ── Desktop medio (1025px – 1199px): sidebars ligeramente más estrechos ── */
-@media (min-width: 1025px) and (max-width: 1199px) {
-    .app-shell { grid-template-columns: 240px 1fr 260px; }
+/* ── Pantalla grande (1920px – 2559px): pizarras y monitores amplios ── */
+@media (min-width: 1920px) {
+    html { font-size: 18px; }
+    .app-shell { grid-template-columns: 320px 1fr 480px; }
+    .col-center { padding: 2.25rem 2.5rem 3rem; }
+    /* Touch targets de 56×56 px para pantallas táctiles de gran formato */
+    .sidebar-nav__link { min-height: 56px; }
+    .btn { min-height: 56px; }
+    .int-btn { min-height: 44px; padding: 0.65rem 0.875rem; }
+}
+
+/* ── 4K / pizarras grandes (≥ 2560px): máxima escala ── */
+@media (min-width: 2560px) {
+    html { font-size: 22px; }
+    .app-shell { grid-template-columns: 400px 1fr 600px; }
 }
 
 /* ── Tablet (641px – 1024px): sidebar icon-only + columna central ── */
