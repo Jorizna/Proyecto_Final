@@ -91,4 +91,43 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id');
     }
+
+    // ─── Helpers de perfil ────────────────────────────────────────────────────
+
+    /** Carga todas las relaciones necesarias para renderizar la vista de perfil. */
+    public function cargarRelacionesPerfil(): static
+    {
+        return $this->load([
+            'publicaciones.imagenes',
+            'publicaciones.etiquetas',
+            'publicaciones.likes',
+            'publicaciones.repostes',
+            'repostes.publicacion.imagenes',
+            'repostes.publicacion.user',
+            'repostes.publicacion.etiquetas',
+            'repostes.publicacion.likes',
+            'repostes.publicacion.repostes',
+            'comentarios.publicacion',
+            'publicacionesLiked.imagenes',
+            'publicacionesLiked.user',
+            'publicacionesLiked.likes',
+            'publicacionesLiked.repostes',
+        ]);
+    }
+
+    /**
+     * Construye el feed combinado (publicaciones propias + repostes) ordenado por fecha.
+     * Requiere haber llamado a cargarRelacionesPerfil() antes.
+     */
+    public function feedCombinado(): \Illuminate\Support\Collection
+    {
+        $propias = $this->publicaciones
+            ->map(fn($p) => ['tipo' => 'publicacion', 'fecha' => $p->created_at, 'item' => $p]);
+
+        $repostes = $this->repostes
+            ->filter(fn($r) => $r->publicacion !== null)
+            ->map(fn($r) => ['tipo' => 'reposte', 'fecha' => $r->created_at, 'item' => $r->publicacion]);
+
+        return $propias->concat($repostes)->sortByDesc('fecha')->values();
+    }
 }

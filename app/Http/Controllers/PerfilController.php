@@ -14,32 +14,8 @@ class PerfilController extends Controller
 {
     public function show(): View
     {
-        $user = Auth::user()->load([
-            'publicaciones.imagenes',
-            'publicaciones.etiquetas',
-            'publicaciones.likes',
-            'publicaciones.repostes',
-            'repostes.publicacion.imagenes',
-            'repostes.publicacion.user',
-            'repostes.publicacion.etiquetas',
-            'repostes.publicacion.likes',
-            'repostes.publicacion.repostes',
-            'comentarios.publicacion',
-            'publicacionesLiked.imagenes',
-            'publicacionesLiked.user',
-            'publicacionesLiked.likes',
-            'publicacionesLiked.repostes',
-        ]);
-
-        $feed = $user->publicaciones
-            ->map(fn($p) => ['tipo' => 'publicacion', 'fecha' => $p->created_at, 'item' => $p])
-            ->concat(
-                $user->repostes
-                    ->filter(fn($r) => $r->publicacion !== null)
-                    ->map(fn($r) => ['tipo' => 'reposte', 'fecha' => $r->created_at, 'item' => $r->publicacion])
-            )
-            ->sortByDesc('fecha')
-            ->values();
+        $user = Auth::user()->cargarRelacionesPerfil();
+        $feed = $user->feedCombinado();
 
         $isOwnProfile = true;
         $esSeguido    = false;

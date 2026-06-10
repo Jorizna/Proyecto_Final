@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Etiqueta;
 use App\Models\Imagen;
-use App\Models\Like;
 use App\Models\Publicacion;
-use App\Models\Reposte;
 use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class PublicacionController extends Controller
@@ -23,55 +21,41 @@ class PublicacionController extends Controller
             return view('welcome');
         }
 
-        $user         = Auth::user();
-        $followingIds = $user->following()->pluck('users.id')->toArray();
+        $user = Auth::user();
 
-        if (!empty($followingIds)) {
-            $inList = Cache::tags('feed')->remember("feed.tier1.{$user->id}", 120, function () use ($followingIds) {
-                $tier1Ids = Publicacion::whereIn('user_id', $followingIds)->pluck('id')
-                    ->merge(Like::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
-                    ->merge(Reposte::whereIn('user_id', $followingIds)->pluck('publicacion_id'))
-                    ->unique()
-                    ->values()
-                    ->toArray();
+        // Si el usuario sigue a alguien, mostramos primero las zonas de su red
+        $followingIds = $user->following()->pluck('users.id');
 
-                return implode(',', $tier1Ids ?: [0]);
-            });
-
-            $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
-                ->where('user_id', '!=', $user->id)
-                ->orderByRaw("CASE WHEN id IN ({$inList}) THEN 0 ELSE 1 END")
-                ->latest()
-                ->paginate(20);
-        } else {
-            $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
-                ->where('user_id', '!=', $user->id)
-                ->latest()
-                ->paginate(20);
-        }
+        $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
+            ->where('user_id', '!=', $user->id)
+            ->when($followingIds->isNotEmpty(), function ($q) use ($followingIds) {
+                // Las zonas de gente seguida aparecen primero, luego el resto por fecha
+                $q->orderByRaw('CASE WHEN user_id IN (' . $followingIds->join(',') . ') THEN 0 ELSE 1 END');
+            })
+            ->latest()
+            ->paginate(20);
 
         return view('publicaciones.index', compact('publicaciones'));
     }
 
     public function buscar(Request $request): View
     {
-        $q = trim($request->get('q', ''));
+        $q         = trim($request->get('q', ''));
         $etiquetas = Etiqueta::orderBy('nombre')->get();
+        $temporadas = Publicacion::TEMPORADAS;
+        $licencias  = Publicacion::LICENCIAS;
 
         $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes'])
-            ->when($q, function ($query) use ($q) {
-                $query->where(function ($q2) use ($q) {
-                    $q2->where('titulo', 'like', "%{$q}%")
-                       ->orWhere('descripcion', 'like', "%{$q}%");
-                });
-            })
+            ->when($q, fn($query) => $query->where(
+                fn($sub) => $sub->where('titulo', 'like', "%{$q}%")
+                               ->orWhere('descripcion', 'like', "%{$q}%")
+            ))
             ->latest()
             ->get();
 
-        $temporadas = \App\Models\Publicacion::TEMPORADAS;
-        $licencias  = \App\Models\Publicacion::LICENCIAS;
-
-        return view('publicaciones.buscar', compact('publicaciones', 'q', 'etiquetas', 'temporadas', 'licencias'));
+        return view('publicaciones.buscar', compact(
+            'publicaciones', 'q', 'etiquetas', 'temporadas', 'licencias'
+        ));
     }
 
     public function create(): View
@@ -83,28 +67,7 @@ class PublicacionController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'titulo'      => 'required|string|max:255',
-            'descripcion' => 'required|string|max:2000',
-            'latitud'     => 'required|numeric|between:-90,90',
-            'longitud'    => 'required|numeric|between:-180,180',
-            'temporada'   => 'nullable|in:invierno,primavera,verano,otono',
-            'licencia'    => 'nullable|in:interauton,auton_1,auton_5,coto,mar',
-            'etiquetas'   => 'nullable|array',
-            'etiquetas.*' => 'exists:etiquetas,id',
-            'imagenes'    => 'nullable|array|max:8',
-            'imagenes.*'  => [
-                'file',
-                'mimes:jpeg,jpg,png,webp,gif',
-                function ($attribute, $value, $fail) {
-                    if (!$value) return;
-                    $maxKb = $value->getMimeType() === 'image/gif' ? 15360 : 5120;
-                    if ($value->getSize() / 1024 > $maxKb) {
-                        $fail('Las imágenes admiten hasta 5 MB (GIFs hasta 15 MB).');
-                    }
-                },
-            ],
-        ]);
+        $validated = $request->validate($this->reglasPublicacion());
 
         $publicacion = Publicacion::create([
             'user_id'     => Auth::id(),
@@ -120,18 +83,7 @@ class PublicacionController extends Controller
             $publicacion->etiquetas()->sync($validated['etiquetas']);
         }
 
-        if ($request->hasFile('imagenes')) {
-            foreach ($request->file('imagenes') as $orden => $imagen) {
-                $ruta = ImageService::store($imagen, 'publicaciones');
-                Imagen::create([
-                    'publicacion_id' => $publicacion->id,
-                    'ruta'           => $ruta,
-                    'orden'          => $orden,
-                ]);
-            }
-        }
-
-        Cache::tags('feed')->flush();
+        $this->guardarImagenes($request, $publicacion);
 
         return redirect()->route('publicaciones.show', $publicacion)
             ->with('success', 'Zona de pesca publicada.');
@@ -146,16 +98,15 @@ class PublicacionController extends Controller
             'likes',
             'repostes',
             'favoritos',
-            'comentarios' => function ($q) {
-                $q->whereNull('parent_id')
-                  ->with([
-                      'user', 'imagenes',
-                      'children.user', 'children.imagenes',
-                      'children.children.user', 'children.children.imagenes',
-                      'children.children.children.user', 'children.children.children.imagenes',
-                  ])
-                  ->latest();
-            },
+            'comentarios' => fn($q) => $q
+                ->whereNull('parent_id')
+                ->with([
+                    'user', 'imagenes',
+                    'children.user', 'children.imagenes',
+                    'children.children.user', 'children.children.imagenes',
+                    'children.children.children.user', 'children.children.children.imagenes',
+                ])
+                ->latest(),
         ]);
 
         $esLiked      = false;
@@ -163,16 +114,14 @@ class PublicacionController extends Controller
         $esFavorito   = false;
 
         if (Auth::check()) {
-            $esLiked      = $publicacion->likes()->where('user_id', Auth::id())->exists();
-            $esReposteado = $publicacion->repostes()->where('user_id', Auth::id())->exists();
-            $esFavorito   = $publicacion->favoritos()->where('user_id', Auth::id())->exists();
+            $userId       = Auth::id();
+            $esLiked      = $publicacion->likes()->where('user_id', $userId)->exists();
+            $esReposteado = $publicacion->repostes()->where('user_id', $userId)->exists();
+            $esFavorito   = $publicacion->favoritos()->where('user_id', $userId)->exists();
         }
 
         return view('publicaciones.show', compact(
-            'publicacion',
-            'esLiked',
-            'esReposteado',
-            'esFavorito'
+            'publicacion', 'esLiked', 'esReposteado', 'esFavorito'
         ));
     }
 
@@ -180,7 +129,7 @@ class PublicacionController extends Controller
     {
         $this->authorize('update', $publicacion);
 
-        $etiquetas = Etiqueta::orderBy('nombre')->get();
+        $etiquetas             = Etiqueta::orderBy('nombre')->get();
         $etiquetasSeleccionadas = $publicacion->etiquetas->pluck('id')->toArray();
 
         return view('publicaciones.edit', compact('publicacion', 'etiquetas', 'etiquetasSeleccionadas'));
@@ -190,28 +139,7 @@ class PublicacionController extends Controller
     {
         $this->authorize('update', $publicacion);
 
-        $validated = $request->validate([
-            'titulo'      => 'required|string|max:255',
-            'descripcion' => 'required|string|max:2000',
-            'latitud'     => 'required|numeric|between:-90,90',
-            'longitud'    => 'required|numeric|between:-180,180',
-            'temporada'   => 'nullable|in:invierno,primavera,verano,otono',
-            'licencia'    => 'nullable|in:interauton,auton_1,auton_5,coto,mar',
-            'etiquetas'   => 'nullable|array',
-            'etiquetas.*' => 'exists:etiquetas,id',
-            'imagenes'    => 'nullable|array|max:8',
-            'imagenes.*'  => [
-                'file',
-                'mimes:jpeg,jpg,png,webp,gif',
-                function ($attribute, $value, $fail) {
-                    if (!$value) return;
-                    $maxKb = $value->getMimeType() === 'image/gif' ? 15360 : 5120;
-                    if ($value->getSize() / 1024 > $maxKb) {
-                        $fail('Las imágenes admiten hasta 5 MB (GIFs hasta 15 MB).');
-                    }
-                },
-            ],
-        ]);
+        $validated = $request->validate($this->reglasPublicacion());
 
         $publicacion->update([
             'titulo'      => $validated['titulo'],
@@ -224,16 +152,7 @@ class PublicacionController extends Controller
 
         $publicacion->etiquetas()->sync($validated['etiquetas'] ?? []);
 
-        if ($request->hasFile('imagenes')) {
-            foreach ($request->file('imagenes') as $orden => $imagen) {
-                $ruta = ImageService::store($imagen, 'publicaciones');
-                Imagen::create([
-                    'publicacion_id' => $publicacion->id,
-                    'ruta'           => $ruta,
-                    'orden'          => $publicacion->imagenes()->count() + $orden,
-                ]);
-            }
-        }
+        $this->guardarImagenes($request, $publicacion, $publicacion->imagenes()->count());
 
         return redirect()->route('publicaciones.show', $publicacion)
             ->with('success', 'Zona de pesca actualizada.');
@@ -248,7 +167,6 @@ class PublicacionController extends Controller
         }
 
         $publicacion->delete();
-        Cache::tags('feed')->flush();
 
         return redirect()->route('publicaciones.index')
             ->with('success', 'Zona de pesca eliminada.');
@@ -262,5 +180,55 @@ class PublicacionController extends Controller
         $imagen->delete();
 
         return back()->with('success', 'Imagen eliminada.');
+    }
+
+    // ─── Helpers privados ─────────────────────────────────────────────────────
+
+    /** Reglas de validación compartidas entre store() y update(). */
+    private function reglasPublicacion(): array
+    {
+        return [
+            'titulo'      => 'required|string|max:255',
+            'descripcion' => 'required|string|max:2000',
+            'latitud'     => 'required|numeric|between:-90,90',
+            'longitud'    => 'required|numeric|between:-180,180',
+            'temporada'   => 'nullable|in:invierno,primavera,verano,otono',
+            'licencia'    => 'nullable|in:interauton,auton_1,auton_5,coto,mar',
+            'etiquetas'   => 'nullable|array',
+            'etiquetas.*' => 'exists:etiquetas,id',
+            'imagenes'    => 'nullable|array|max:8',
+            'imagenes.*'  => ['file', 'mimes:jpeg,jpg,png,webp,gif', $this->reglaTamanoImagen()],
+        ];
+    }
+
+    /** Cierre de validación para el tamaño máximo de imagen (5 MB, GIFs 15 MB). */
+    private function reglaTamanoImagen(): \Closure
+    {
+        return function ($attribute, $value, $fail) {
+            if (!$value) {
+                return;
+            }
+            $maxKb = $value->getMimeType() === 'image/gif' ? 15360 : 5120;
+            if ($value->getSize() / 1024 > $maxKb) {
+                $fail('Las imágenes admiten hasta 5 MB (GIFs hasta 15 MB).');
+            }
+        };
+    }
+
+    /** Guarda los archivos de imagen subidos y los asocia a la publicación. */
+    private function guardarImagenes(Request $request, Publicacion $publicacion, int $ordenBase = 0): void
+    {
+        if (!$request->hasFile('imagenes')) {
+            return;
+        }
+
+        foreach ($request->file('imagenes') as $orden => $archivo) {
+            $ruta = ImageService::store($archivo, 'publicaciones');
+            Imagen::create([
+                'publicacion_id' => $publicacion->id,
+                'ruta'           => $ruta,
+                'orden'          => $ordenBase + $orden,
+            ]);
+        }
     }
 }
