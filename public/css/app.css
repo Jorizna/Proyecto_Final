@@ -1286,18 +1286,60 @@ body.app {
 .galeria__item:hover .galeria__delete { opacity: 1; }
 
 /* ── 33. Responsive Breakpoints ── */
-@media (max-width: 1200px) {
-    .app-shell { grid-template-columns: 240px 1fr 270px; }
+
+/* Transición suave al cambiar entre layouts */
+.app-shell { transition: grid-template-columns 0.2s ease; }
+.col-left__inner { transition: padding 0.2s ease; }
+.sidebar-nav__link { transition: background 0.18s ease, color 0.18s ease, padding 0.2s ease; }
+
+/* ── Desktop medio (1025px – 1199px): sidebars ligeramente más estrechos ── */
+@media (min-width: 1025px) and (max-width: 1199px) {
+    .app-shell { grid-template-columns: 240px 1fr 260px; }
 }
-@media (max-width: 1000px) {
+
+/* ── Tablet (641px – 1024px): sidebar icon-only + columna central ── */
+@media (min-width: 641px) and (max-width: 1024px) {
     .app-shell {
-        grid-template-columns: 220px 1fr;
+        grid-template-columns: 72px 1fr;
         grid-template-areas: "col-left col-center";
     }
     .col-right { display: none; }
-    .col-center { padding: 1.5rem 1.5rem 3rem; }
+    .col-center { padding: 1.5rem 1.25rem 3rem; }
+
+    /* Sidebar comprimido a iconos */
+    .col-left__inner { padding: 1.25rem 0.5rem; align-items: center; }
+    .sidebar-logo { justify-content: center; padding: 0.5rem; margin-bottom: 1rem; }
+    .sidebar-logo__label { display: none; }
+    .sidebar-nav__link {
+        justify-content: center;
+        padding: 0.875rem;
+        min-height: 44px;
+        position: relative;
+    }
+    .sidebar-nav__label { display: none; }
+    .sidebar-nav__link--cta { justify-content: center; padding: 0.875rem; }
+
+    /* Badge: punto flotante sobre el icono en lugar de etiqueta inline */
+    .sidebar-notif-badge {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        margin-left: 0;
+        min-width: 14px;
+        height: 14px;
+        font-size: 0.55rem;
+        padding: 0 3px;
+    }
+
+    /* Perfil inferior: solo avatar centrado */
+    .sidebar-profile { flex-direction: column; align-items: center; gap: 0.5rem; padding-top: 0.875rem; }
+    .sidebar-profile__info { display: none; }
+    .sidebar-logout-form { margin-top: 0; }
+    .sidebar-legal { display: none; }
 }
-@media (max-width: 720px) {
+
+/* ── Móvil (≤ 640px): columna única + barra superior + nav inferior ── */
+@media (max-width: 640px) {
     .app-shell {
         grid-template-columns: 1fr;
         grid-template-areas: "col-center";
@@ -1307,6 +1349,10 @@ body.app {
     .col-center { padding: 0.75rem 0.875rem 5rem; }
     .mobile-bar { display: flex; }
     .mobile-nav { display: flex; }
+
+    /* Targets táctiles mínimos de 44×44 px (WCAG 2.5.5) */
+    .mobile-nav__item     { min-width: 44px; min-height: 44px; }
+    .mobile-nav__item--cta { width: 44px; height: 44px; }
 }
 
 /* ── 34. Home Feed Cascade — full-width vertical stack ── */

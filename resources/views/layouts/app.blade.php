@@ -39,7 +39,7 @@
                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                     <polyline points="9 22 9 12 15 12 15 22"/>
                 </svg>
-                FishSpot
+                <span class="sidebar-logo__label">FishSpot</span>
             </a>
 
             <nav class="sidebar-nav">
@@ -49,7 +49,7 @@
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
-                    Inicio
+                    <span class="sidebar-nav__label">Inicio</span>
                 </a>
 
                 <a href="{{ route('buscar') }}"
@@ -57,7 +57,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
                         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     </svg>
-                    Explorar
+                    <span class="sidebar-nav__label">Explorar</span>
                 </a>
 
                 <a href="{{ route('guias.index') }}"
@@ -69,7 +69,7 @@
                         <line x1="10" y1="11" x2="16" y2="11"/>
                         <line x1="10" y1="15" x2="14" y2="15"/>
                     </svg>
-                    Equipos y Guías
+                    <span class="sidebar-nav__label">Equipos y Guías</span>
                 </a>
 
                 <a href="{{ route('guardados.index') }}"
@@ -77,7 +77,7 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" width="18" height="18">
                         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                     </svg>
-                    Guardados
+                    <span class="sidebar-nav__label">Guardados</span>
                 </a>
 
                 @php
@@ -89,7 +89,7 @@
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                     </svg>
-                    Notificaciones
+                    <span class="sidebar-nav__label">Notificaciones</span>
                     @if($notifNoLeidas > 0)
                         <span class="sidebar-notif-badge">{{ $notifNoLeidas > 99 ? '99+' : $notifNoLeidas }}</span>
                     @endif
@@ -101,7 +101,7 @@
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                         <circle cx="12" cy="7" r="4"/>
                     </svg>
-                    Mi perfil
+                    <span class="sidebar-nav__label">Mi perfil</span>
                 </a>
 
                 <a href="{{ route('publicaciones.create') }}" class="sidebar-nav__link sidebar-nav__link--cta">
@@ -109,7 +109,7 @@
                         <line x1="12" y1="5" x2="12" y2="19"/>
                         <line x1="5" y1="12" x2="19" y2="12"/>
                     </svg>
-                    Nueva zona
+                    <span class="sidebar-nav__label">Nueva zona</span>
                 </a>
             </nav>
 
