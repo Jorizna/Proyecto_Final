@@ -12,8 +12,7 @@
 │   ├── Models/                     # Eloquent: User, Publicacion, Comentario...
 │   ├── Policies/                   # Autorización de publicaciones
 │   └── Services/
-│       ├── AemetService.php        # API meteorológica AEMET
-│       └── OverpassService.php     # Masas de agua (OpenStreetMap)
+│       └── ImageService.php        # Redimensionado y almacenamiento de imágenes
 ├── database/
 │   ├── migrations/                 # 8 tablas del dominio
 │   └── seeders/                    # Usuario demo + 14 especies de pesca
