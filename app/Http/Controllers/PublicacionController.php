@@ -9,6 +9,7 @@ use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -26,14 +27,15 @@ class PublicacionController extends Controller
         // Si el usuario sigue a alguien, mostramos primero las zonas de su red
         $followingIds = $user->following()->pluck('users.id');
 
-        $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
-            ->where('user_id', '!=', $user->id)
-            ->when($followingIds->isNotEmpty(), function ($q) use ($followingIds) {
-                // Las zonas de gente seguida aparecen primero, luego el resto por fecha
-                $q->orderByRaw('CASE WHEN user_id IN (' . $followingIds->join(',') . ') THEN 0 ELSE 1 END');
-            })
-            ->latest()
-            ->paginate(20);
+        $query = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes', 'comentarios'])
+            ->where('user_id', '!=', $user->id);
+
+        // Las zonas de personas seguidas aparecen primero; el resto se ordena por fecha
+        if ($followingIds->isNotEmpty()) {
+            $query->orderByRaw('CASE WHEN user_id IN (' . $followingIds->join(',') . ') THEN 0 ELSE 1 END');
+        }
+
+        $publicaciones = $query->latest()->paginate(20);
 
         return view('publicaciones.index', compact('publicaciones'));
     }
@@ -45,13 +47,16 @@ class PublicacionController extends Controller
         $temporadas = Publicacion::TEMPORADAS;
         $licencias  = Publicacion::LICENCIAS;
 
-        $publicaciones = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes'])
-            ->when($q, fn($query) => $query->where(
-                fn($sub) => $sub->where('titulo', 'like', "%{$q}%")
-                               ->orWhere('descripcion', 'like', "%{$q}%")
-            ))
-            ->latest()
-            ->get();
+        $query = Publicacion::with(['user', 'imagenes', 'etiquetas', 'likes'])->latest();
+
+        if ($q) {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('titulo', 'like', "%{$q}%")
+                    ->orWhere('descripcion', 'like', "%{$q}%");
+            });
+        }
+
+        $publicaciones = $query->get();
 
         return view('publicaciones.buscar', compact(
             'publicaciones', 'q', 'etiquetas', 'temporadas', 'licencias'
@@ -85,12 +90,16 @@ class PublicacionController extends Controller
 
         $this->guardarImagenes($request, $publicacion);
 
+        // Invalidamos el caché para que el feed se reconstruya con la nueva publicación
+        Cache::tags('feed')->flush();
+
         return redirect()->route('publicaciones.show', $publicacion)
             ->with('success', 'Zona de pesca publicada.');
     }
 
     public function show(Publicacion $publicacion): View
     {
+        // Cargamos solo comentarios raíz (sin parent) con sus respuestas anidadas hasta 3 niveles
         $publicacion->load([
             'user',
             'imagenes',
@@ -98,15 +107,16 @@ class PublicacionController extends Controller
             'likes',
             'repostes',
             'favoritos',
-            'comentarios' => fn($q) => $q
-                ->whereNull('parent_id')
-                ->with([
-                    'user', 'imagenes',
-                    'children.user', 'children.imagenes',
-                    'children.children.user', 'children.children.imagenes',
-                    'children.children.children.user', 'children.children.children.imagenes',
-                ])
-                ->latest(),
+            'comentarios' => function ($q) {
+                $q->whereNull('parent_id')
+                  ->with([
+                      'user', 'imagenes',
+                      'children.user', 'children.imagenes',
+                      'children.children.user', 'children.children.imagenes',
+                      'children.children.children.user', 'children.children.children.imagenes',
+                  ])
+                  ->latest();
+            },
         ]);
 
         $esLiked      = false;
@@ -154,6 +164,9 @@ class PublicacionController extends Controller
 
         $this->guardarImagenes($request, $publicacion, $publicacion->imagenes()->count());
 
+        // Invalidamos el caché para que el feed muestre los datos actualizados
+        Cache::tags('feed')->flush();
+
         return redirect()->route('publicaciones.show', $publicacion)
             ->with('success', 'Zona de pesca actualizada.');
     }
@@ -167,6 +180,9 @@ class PublicacionController extends Controller
         }
 
         $publicacion->delete();
+
+        // Invalidamos el caché para que el feed deje de mostrar la publicación eliminada
+        Cache::tags('feed')->flush();
 
         return redirect()->route('publicaciones.index')
             ->with('success', 'Zona de pesca eliminada.');

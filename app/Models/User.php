@@ -115,18 +115,21 @@ class User extends Authenticatable
         ]);
     }
 
-    /**
-     * Construye el feed combinado (publicaciones propias + repostes) ordenado por fecha.
-     * Requiere haber llamado a cargarRelacionesPerfil() antes.
-     */
+    /** Construye el feed combinado (publicaciones propias + repostes) ordenado por fecha. */
     public function feedCombinado(): \Illuminate\Support\Collection
     {
-        $propias = $this->publicaciones
-            ->map(fn($p) => ['tipo' => 'publicacion', 'fecha' => $p->created_at, 'item' => $p]);
+        $propias = $this->publicaciones->map(function ($publicacion) {
+            return ['tipo' => 'publicacion', 'fecha' => $publicacion->created_at, 'item' => $publicacion];
+        });
 
+        // Filtramos repostes cuya publicación fue eliminada para evitar errores en la vista
         $repostes = $this->repostes
-            ->filter(fn($r) => $r->publicacion !== null)
-            ->map(fn($r) => ['tipo' => 'reposte', 'fecha' => $r->created_at, 'item' => $r->publicacion]);
+            ->filter(function ($reposte) {
+                return $reposte->publicacion !== null;
+            })
+            ->map(function ($reposte) {
+                return ['tipo' => 'reposte', 'fecha' => $reposte->created_at, 'item' => $reposte->publicacion];
+            });
 
         return $propias->concat($repostes)->sortByDesc('fecha')->values();
     }

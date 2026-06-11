@@ -9,6 +9,7 @@ use App\Services\ImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ComentarioController extends Controller
 {
@@ -65,8 +66,11 @@ class ComentarioController extends Controller
 
     public function destroy(Publicacion $publicacion, Comentario $comentario): RedirectResponse
     {
-        if ($comentario->user_id !== Auth::id()) {
-            abort(403);
+        $this->authorize('delete', $comentario);
+
+        // Borramos las imágenes físicas adjuntas antes de eliminar el comentario
+        foreach ($comentario->imagenes as $imagen) {
+            Storage::disk('public')->delete($imagen->ruta);
         }
 
         $comentario->delete();

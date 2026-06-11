@@ -21,7 +21,7 @@
                 <a href="{{ route('usuarios.show', $comment->user) }}"
                    class="reply-item__author">{{ $comment->user->name }}</a>
                 <span class="reply-item__fecha">{{ $comment->created_at->diffForHumans() }}</span>
-                @if(auth()->id() === $comment->user_id)
+                @can('delete', $comment)
                     <form method="POST"
                           action="{{ route('comentarios.destroy', [$publicacion, $comment]) }}"
                           class="reply-delete-form">
@@ -29,7 +29,7 @@
                         <button type="button" class="btn-icon btn-icon--danger" title="Eliminar"
                                 onclick="this.closest('form').submit()">✕</button>
                     </form>
-                @endif
+                @endcan
             </div>
 
             @if($comment->texto)
