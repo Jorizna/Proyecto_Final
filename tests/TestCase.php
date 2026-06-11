@@ -1,5 +1,5 @@
 <?php
-
+//estructura de test
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
