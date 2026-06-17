@@ -956,34 +956,38 @@ body.app {
     background: #F4F5F6;
 }
 
-/* ── 28. 3-Column App Shell — Twitter/X layout containment ── */
+/* ── 28. 3-Column App Shell — Columnas fantasma con gaps elásticos ── */
 /*
-   ARQUITECTURA:
-   ┌─────────────────────────────────────────────────────┐  ← <body> (100vw)
-   │   [margen]  │ col-left │ col-center │ col-right │ [margen]  │
-   │             └──────── max-width: 1290px ──────────┘          │
-   └─────────────────────────────────────────────────────────────┘
-   En pantallas > 1290px el bloque de 3 columnas flota centrado
-   y los márgenes exteriores absorben todo el espacio sobrante.
+   MECANISMO: 7 tracks en lugar de 3. Los 2 extremos [minmax(0,1fr)]
+   son columnas vacías invisibles que actúan como márgenes inteligentes:
+   absorben TODO el espacio sobrante cuando los demás tracks alcanzan su tope.
+
+   ┌────────────────────────────────────────────────────────────────────────────┐ body
+   │ [1fr-L] │ 275px │ clamp(gap) │ minmax(0,700px) │ clamp(gap) │ 350px │ [1fr-R] │
+   │           └────────────────── contenido visible ─────────────────────┘           │
+   └────────────────────────────────────────────────────────────────────────────────┘
+
+   - [1fr-L / 1fr-R]: absorben el espacio libre; en 5000px cada uno tiene ~1780px.
+   - clamp(gap):  empieza en 16px, crece al 2% del viewport y SE DETIENE en 80px.
+   - minmax(center): el feed crece hasta 700px y luego cede espacio a los [1fr].
+   - Resultado: las columnas NUNCA se separan más de 80px entre sí.
 */
 .app-shell {
     display: grid;
-    /* 275px (nav fijo, Twitter usa ~275px)
-       1fr   (feed elástico, crece pero está acotado por max-width del shell)
-       350px (widgets fijos, Twitter usa ~348px)                            */
-    grid-template-columns: 275px 1fr 350px;
-    grid-template-areas: "col-left col-center col-right";
-    /* Distancia fija e invariable entre las tres columnas */
-    column-gap: 0;        /* la separación visual la dan los bordes + padding;
-                             ver comentario en .col-left__inner / .col-right__inner */
-    min-height: 100vh;
+    grid-template-columns:
+        minmax(0, 1fr)            /* ① margen exterior izquierdo   */
+        275px                     /* ② col-left  (FIJO)            */
+        clamp(16px, 2vw, 80px)   /* ③ gap izq.  (elástico, ≤80px) */
+        minmax(0, 700px)          /* ④ col-center (elástico, ≤700px)*/
+        clamp(16px, 2vw, 80px)   /* ⑤ gap der.  (elástico, ≤80px) */
+        350px                     /* ⑥ col-right (FIJO)            */
+        minmax(0, 1fr);           /* ⑦ margen exterior derecho      */
+    /* El "." en grid-template-areas ocupa los tracks de margen y gap sin nombre */
+    grid-template-areas: ". col-left . col-center . col-right .";
     align-items: start;
-    /* ── Contención estilo Twitter ──
-       El bloque jamás supera 1290px (275 + 665 + 350).
-       En pantallas gigantes los márgenes exteriores se reparten equitativamente. */
-    max-width: 1290px;
-    margin-inline: auto;  /* centrado automático sin tocar margin-top/bottom */
-    width: 100%;          /* fluido en viewports menores al tope */
+    min-height: 100vh;
+    width: 100%;
+    /* Sin max-width aquí: el control lo ejercen los topes internos de cada track */
 }
 
 .col-left {
@@ -1315,21 +1319,12 @@ body.app {
 .col-right { transition: all 0.2s ease; }
 .sidebar-nav__link { transition: background 0.2s ease, color 0.2s ease, padding 0.2s ease; }
 
-/* ── Shell flotante (≥ 1310px): sombra perimetral cuando ya no ocupa 100vw ── */
-/* Se activa 20px por encima del max-width para evitar flash en el breakpoint exacto */
-@media (min-width: 1310px) {
-    .app-shell {
-        box-shadow:
-            0 0 0 1px rgba(0,0,0,0.05),   /* ring perimetral sutil */
-            0 4px 48px rgba(0,0,0,0.04);  /* profundidad */
-    }
-}
 
 /* ── Pantalla grande (1920px – 2559px): pizarras y monitores amplios ── */
 @media (min-width: 1920px) {
     html { font-size: 18px; }
-    /* Las columnas NO cambian: el shell ya está contenido en 1290px.
-       Ampliar laterales aquí reduciría el centro innecesariamente. */
+    /* Los tracks de columna NO cambian: el gap ya está en su tope (80px)
+       y el feed en su máximo (700px). Solo se amplían tipografía y touch targets. */
     .col-center { padding: 2.25rem 2.5rem 3rem; }
 
     /* Touch targets de 56×56 px para pantallas táctiles de gran formato */
@@ -1345,8 +1340,8 @@ body.app {
 /* ── 4K / pizarras grandes (≥ 2560px): solo escala tipográfica ── */
 @media (min-width: 2560px) {
     html { font-size: 22px; }
-    /* No se tocan las columnas: el shell sigue en 1290px, centrado,
-       con el área de body visible a los lados como margen natural. */
+    /* Los tracks internos ya están en su tope máximo. Los [1fr] externos
+       absorben el espacio sobrante (≈1780px a cada lado en una pantalla de 5000px). */
 }
 
 /* ── Tablet (641px – 1024px): sidebar icon-only + col-right apilada debajo del feed ── */
