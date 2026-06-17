@@ -956,17 +956,34 @@ body.app {
     background: #F4F5F6;
 }
 
-/* ── 28. 3-Column App Shell — full-height flush sidebars ── */
+/* ── 28. 3-Column App Shell — Twitter/X layout containment ── */
+/*
+   ARQUITECTURA:
+   ┌─────────────────────────────────────────────────────┐  ← <body> (100vw)
+   │   [margen]  │ col-left │ col-center │ col-right │ [margen]  │
+   │             └──────── max-width: 1290px ──────────┘          │
+   └─────────────────────────────────────────────────────────────┘
+   En pantallas > 1290px el bloque de 3 columnas flota centrado
+   y los márgenes exteriores absorben todo el espacio sobrante.
+*/
 .app-shell {
     display: grid;
-    grid-template-columns: 240px 1fr 380px;
+    /* 275px (nav fijo, Twitter usa ~275px)
+       1fr   (feed elástico, crece pero está acotado por max-width del shell)
+       350px (widgets fijos, Twitter usa ~348px)                            */
+    grid-template-columns: 275px 1fr 350px;
     grid-template-areas: "col-left col-center col-right";
+    /* Distancia fija e invariable entre las tres columnas */
+    column-gap: 0;        /* la separación visual la dan los bordes + padding;
+                             ver comentario en .col-left__inner / .col-right__inner */
     min-height: 100vh;
     align-items: start;
-    /* Contención visual: el shell nunca supera 1440px y se centra automáticamente */
-    max-width: 1440px;
-    margin-inline: auto;
-    width: 100%;
+    /* ── Contención estilo Twitter ──
+       El bloque jamás supera 1290px (275 + 665 + 350).
+       En pantallas gigantes los márgenes exteriores se reparten equitativamente. */
+    max-width: 1290px;
+    margin-inline: auto;  /* centrado automático sin tocar margin-top/bottom */
+    width: 100%;          /* fluido en viewports menores al tope */
 }
 
 .col-left {
@@ -1298,17 +1315,20 @@ body.app {
 .col-right { transition: all 0.2s ease; }
 .sidebar-nav__link { transition: background 0.2s ease, color 0.2s ease, padding 0.2s ease; }
 
-/* ── Pantalla grande (≥ 1460px): sombra perimetral cuando el shell flota ── */
-@media (min-width: 1460px) {
+/* ── Shell flotante (≥ 1310px): sombra perimetral cuando ya no ocupa 100vw ── */
+/* Se activa 20px por encima del max-width para evitar flash en el breakpoint exacto */
+@media (min-width: 1310px) {
     .app-shell {
-        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 4px 48px rgba(0,0,0,0.04);
+        box-shadow:
+            0 0 0 1px rgba(0,0,0,0.05),   /* ring perimetral sutil */
+            0 4px 48px rgba(0,0,0,0.04);  /* profundidad */
     }
 }
 
 /* ── Pantalla grande (1920px – 2559px): pizarras y monitores amplios ── */
 @media (min-width: 1920px) {
     html { font-size: 18px; }
-    /* Las columnas NO cambian: el shell ya está contenido en 1440px.
+    /* Las columnas NO cambian: el shell ya está contenido en 1290px.
        Ampliar laterales aquí reduciría el centro innecesariamente. */
     .col-center { padding: 2.25rem 2.5rem 3rem; }
 
@@ -1325,7 +1345,7 @@ body.app {
 /* ── 4K / pizarras grandes (≥ 2560px): solo escala tipográfica ── */
 @media (min-width: 2560px) {
     html { font-size: 22px; }
-    /* No se tocan las columnas: el shell sigue en 1440px, centrado,
+    /* No se tocan las columnas: el shell sigue en 1290px, centrado,
        con el área de body visible a los lados como margen natural. */
 }
 
@@ -1337,6 +1357,8 @@ body.app {
         grid-template-areas:
             "col-left col-center"
             "col-left col-right";
+        column-gap: 0; /* en tablet la sidebar es solo iconos, sin gap lateral */
+        box-shadow: none; /* sin sombra perimetral en tablet */
     }
     .col-center { padding: 1.5rem 1.25rem 2rem; }
 
