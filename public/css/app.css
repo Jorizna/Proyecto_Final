@@ -1062,9 +1062,13 @@ body.app {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    gap: 0;
+    /* flex-start agrupa los links arriba; en pantallas de 4000px de alto
+       el hueco vacío cae entre el nav y el perfil, NO entre los botones */
+    justify-content: flex-start;
+    /* Gap fijo y constante entre botones, independiente del alto de pantalla */
+    gap: 4px;
+    /* Sin flex:1 aquí: que sea .sidebar-profile quien absorba el espacio
+       sobrante con margin-top:auto para ir al fondo de forma natural */
 }
 .sidebar-nav__link {
     display: flex;
@@ -1112,7 +1116,9 @@ body.app {
 
 /* Sidebar legal footer */
 .sidebar-legal {
-    margin-top: auto;
+    /* margin-top: auto eliminado: ahora lo tiene .sidebar-profile.
+       Si ambos lo tuvieran, el espacio libre se repartiría entre los dos
+       y el perfil NO quedaría pegado al enlace legal. */
     padding-top: 0.875rem;
     border-top: 1px solid var(--border-color, #e5e7eb);
 }
@@ -1144,6 +1150,12 @@ body.app {
 
 /* Sidebar profile bottom */
 .sidebar-profile {
+    /* margin-top: auto absorbe TODO el espacio libre del contenedor flex padre
+       (col-left__inner). Esto ancla el bloque de perfil al fondo sin importar
+       cuánto mida la pantalla. Si el contenido excede el alto, auto = 0
+       y el sidebar simplemente hace scroll. */
+    margin-top: auto;
+    flex-shrink: 0;  /* no se comprime en pantallas muy bajas */
     padding-top: 1.125rem;
     border-top: var(--border);
     display: flex;
