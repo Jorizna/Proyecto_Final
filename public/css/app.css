@@ -963,6 +963,10 @@ body.app {
     grid-template-areas: "col-left col-center col-right";
     min-height: 100vh;
     align-items: start;
+    /* Contención visual: el shell nunca supera 1440px y se centra automáticamente */
+    max-width: 1440px;
+    margin-inline: auto;
+    width: 100%;
 }
 
 .col-left {
@@ -1294,10 +1298,18 @@ body.app {
 .col-right { transition: all 0.2s ease; }
 .sidebar-nav__link { transition: background 0.2s ease, color 0.2s ease, padding 0.2s ease; }
 
+/* ── Pantalla grande (≥ 1460px): sombra perimetral cuando el shell flota ── */
+@media (min-width: 1460px) {
+    .app-shell {
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 4px 48px rgba(0,0,0,0.04);
+    }
+}
+
 /* ── Pantalla grande (1920px – 2559px): pizarras y monitores amplios ── */
 @media (min-width: 1920px) {
     html { font-size: 18px; }
-    .app-shell { grid-template-columns: 320px 1fr 480px; }
+    /* Las columnas NO cambian: el shell ya está contenido en 1440px.
+       Ampliar laterales aquí reduciría el centro innecesariamente. */
     .col-center { padding: 2.25rem 2.5rem 3rem; }
 
     /* Touch targets de 56×56 px para pantallas táctiles de gran formato */
@@ -1306,15 +1318,15 @@ body.app {
     .int-btn { min-height: 56px; padding: 0.65rem 0.875rem; }
     .mobile-nav__item { min-width: 56px; min-height: 56px; }
 
-    /* Feed con max-width para que no se estire demasiado en monitores ultra-anchos */
     .feed-cascade { max-width: 860px; margin-left: auto; margin-right: auto; }
     .post-wrapper  { max-width: 760px; }
 }
 
-/* ── 4K / pizarras grandes (≥ 2560px): máxima escala ── */
+/* ── 4K / pizarras grandes (≥ 2560px): solo escala tipográfica ── */
 @media (min-width: 2560px) {
     html { font-size: 22px; }
-    .app-shell { grid-template-columns: 400px 1fr 600px; }
+    /* No se tocan las columnas: el shell sigue en 1440px, centrado,
+       con el área de body visible a los lados como margen natural. */
 }
 
 /* ── Tablet (641px – 1024px): sidebar icon-only + col-right apilada debajo del feed ── */
